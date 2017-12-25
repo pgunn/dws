@@ -77,41 +77,62 @@ func getenv_with_default(key, fallback string) string {
 
 func get_config_value(key string) {
 	// Given a key, return its value in the config table
+	// SELECT value FROM config WHERE name=$key
 }
 
 // Blog stuff
 func get_blogentry(id int) {
 	// Given an id in the blogentry table, return everything
 	// about it needed to display it, including tags.
+	// SELECT * FROM blogentry WHERE id=$id
+	// and also
+	// SELECT id as tagid, tagname FROM tag WHERE tagid IN (
+	//	SELECT tagid FROM blogentry_tags WHERE beid=$id)
 }
 
 func identify_last_n_blogentries(count int, include_private bool) {
 	// Returns blogentry(id) for the last up-to-$count blogentries
 	// NOTE: It can return fewer than requested if there are not that many.
 	// It will return the entries ordered so newer are earlier.
+	// SELECT id FROM blogentry WHERE hidden=$include_private
+	// 	ORDER BY zeit DESC LIMIT $count
 }
 
-func identify_blogentries_with_tag(tag string) {
+func tagid_for_tag(tag string) {
+	// Returns id for named tag
+	// SELECT id FROM tag WHERE tagname=$tag
+}
+
+func identify_blogentries_with_tag(tagid int) {
 	// Returns blogentry(id) for all blogentries that have the
 	// given tag
+	// SELECT id FROM blogentry WHERE id IN (
+	//	SELECT beid FROM blogentry_tags WHERE tagid=$tagid)
 }
 
 // Review stuff
 func get_all_topics() {
 	// Returns a hashmap of { review_topic => review_topic_id }
 	// including all review topics
+	// SELECT id, name FROM review_topic
 }
 
 func get_all_targets_in_topicid(topicid int) {
 	// Returns a hashmap of { review_target_name => review_target_ids}
 	// for all review targets that are under the topicid
+	// SELECT id, name FROM review_target WHERE topic=$topicid
 }
 
 func identify_all_reviews_for_targetid(targetid int) {
 	// Return reviewids for all reviews with the given target
+	// SELECT id FROM review WHERE target=$targetid
 }
 
 func get_review(id int) {
 	// Given an id in the review table, return everything about it
-	// needed to display it.
+	// needed to display it
+	// SELECT * FROM review WHERE id=$id
+	// and also
+	// SELECT name FROM review_target WHERE id=(target from previous query)
+	// and possibly the same for review_topic too, not sure.
 }

@@ -8,7 +8,7 @@ CREATE TABLE blogentry
 	title TEXT,
 	body TEXT,
 	music TEXT, -- I like to say what music I'm listening to
-	hidden BOOLEAN DEFAULT(FALSE)
+	private BOOLEAN DEFAULT(FALSE)
 	);
 
 CREATE TABLE tag
@@ -16,6 +16,12 @@ CREATE TABLE tag
 	id SERIAL PRIMARY KEY NOT NULL,
 	descrip TEXT, -- Not sure if we'll use this
 	tagname TEXT UNIQUE NOT NULL
+	);
+
+CREATE TABLE blogentry_tags
+	(
+	beid INTEGER NOT NULL REFERENCES blogentry(id),
+	tagid INTEGER NOT NULL REFERENCES tag(id)
 	);
 
 -- We might eventually make this hierarchical
@@ -39,6 +45,7 @@ CREATE TABLE review
 	title TEXT,
 	body TEXT,
 	rating TEXT,
+	target INTEGER REFERENCES review_target(id),
 	hidden BOOLEAN DEFAULT(FALSE)
 	);
 
@@ -51,15 +58,17 @@ CREATE TABLE config
 	description TEXT
 	);
 
-INSERT INTO config(name,value, avalues, description) VALUES ('xmlfeed', 10, 'i[1-100]', 'How many entries to show in the default XML feeds');
-INSERT INTO config(name,value, avalues, description) VALUES ('entries_per_archpage', 10, 'i[1-30]', 'How many entries are part of a blog archive page');
-INSERT INTO config(name,value, avalues, description) VALUES ('wiki_public', 0, 'b', 'Is the Wiki editable by the public?');
+-- These are copied in from POUND as sample config values. We'll replace
+-- them with things appropriate for DWS as we move forward.
+INSERT INTO config(name, value, avalues, description) VALUES ('xmlfeed', 10, 'i[1-100]', 'How many entries to show in the default XML feeds');
+INSERT INTO config(name, value, avalues, description) VALUES ('entries_per_archpage', 10, 'i[1-30]', 'How many entries are part of a blog archive page');
+INSERT INTO config(name, value, avalues, description) VALUES ('wiki_public', 0, 'b', 'Is the Wiki editable by the public?');
 
-INSERT INTO config(name,value, avalues, description) VALUES ('blogstatic', 'http://localhost', 't[URL]', 'Base URL (includes http part) for the server');
-INSERT INTO config(name,value, avalues, description) VALUES ('main_blogname', 'dachte', 't', 'Shortname of the "main" blog (if any)');
-INSERT INTO config(name,value, avalues, description) VALUES ('doing_frontpage', 0, 'b', 'Are we doing a frontpage pointing at all hosted blogs?');
+INSERT INTO config(name, value, avalues, description) VALUES ('blogstatic', 'http://localhost', 't[URL]', 'Base URL (includes http part) for the server');
+INSERT INTO config(name, value, avalues, description) VALUES ('main_blogname', 'dachte', 't', 'Shortname of the "main" blog (if any)');
+INSERT INTO config(name, value, avalues, description) VALUES ('doing_frontpage', 0, 'b', 'Are we doing a frontpage pointing at all hosted blogs?');
 
-INSERT INTO config(name,value, avalues, description) VALUES ('postguard', 1, 'b', 'Enable postguard? This blocks some spam but will block AOL and Tor users from posting');
+INSERT INTO config(name, value, avalues, description) VALUES ('postguard', 1, 'b', 'Enable postguard? This blocks some spam but will block AOL and Tor users from posting');
 
 -- POUND had two features we might eventually add back in:
 -- webpaths configured in the database, and uploading of files.
