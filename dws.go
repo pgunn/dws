@@ -6,13 +6,18 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	_ "github.com/lib/pq"
 )
 
-func roothandler(w http.ResponseWriter, r *http.Request) {
+// ####################################
+// http dispatch functions are the main entrypoint into the code,
+// and are executed by the webserver functions
+
+func dispatch_root(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	fmt.Fprintf(w, "Main page<br />")
-	var dbh = db_connect("pound", "posterkid", "dws")
+	var dbh = db_connect()
 	config_names, err := dbh.Query("SELECT id, name FROM config")
 	if err != nil {
 		fmt.Fprintf(w, "Error: " + err.Error() )
@@ -28,17 +33,37 @@ func roothandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
-	port := getenv_with_default("DWS_PORT", "8000")
-	http.HandleFunc("/", roothandler)
-	http.ListenAndServe(":" + port, nil)
+func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
+	// FIXME: While we work this out, this will give a text/plain response.
+	var dbh = db_connect()
+	var resp = ""
+	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
+	for _, entryid := range last_ten_entries {
+		entryid_i , _ := strconv.Atoi(entryid) // XXX Consider having last_ten_entries be []integer
+		var blogentry = get_blogentry(dbh, entryid_i )
+		resp += "Begin blogentry\n"
+		resp += "Title: " + blogentry["title"] + "\n"
+		resp += "Posted: " + blogentry["zeit"] + "\n"
+		resp += "Body\n-------------------\n" + blogentry["body"] + "\n--------------------\n"
+		resp += "End blogentry\n\n"
+	}
+	w.Header().Set("Content-Type", "text/plain") // Send HTTP headers as late as possible, ideally after errors might happen
+	fmt.Fprintf(w, resp)
+}
+
+func dispatch_css(w http.ResponseWriter, r *http.Request) {
+	// Send the CSS needed for DWS
+	w.Header().Set("Content-Type", "text/css")
 }
 
 // #############
 // POUNDDB
 
-func db_connect(db_user string, db_pass string, db_db string) *sql.DB {
+func db_connect() *sql.DB {
 	// Connect to DB, return database handle
+	var db_user = "pound" // TODO: Use env vars
+	var db_pass = "posterkid"
+	var db_db   =  "dws"
 	db, err := sql.Open("postgres", "postgres://" + db_user + ":" + db_pass + "@localhost/" + db_db + "?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
@@ -46,14 +71,15 @@ func db_connect(db_user string, db_pass string, db_db string) *sql.DB {
 	return db
 }
 
-func get_dbresults() {
+func get_dbresults(res *sql.Rows) {
 	// For the first record returned by the passed in query handle,
 	// return the list as a hashmap
 }
 
-func get_dbcol() {
+func get_dbcol(res *sql.Rows) []string {
 	// For the records returned by the passed in query handle,
 	// return all their first tuple members as an array
+	return nil
 }
 
 func get_dbval() {
@@ -81,21 +107,28 @@ func get_config_value(key string) {
 }
 
 // Blog stuff
-func get_blogentry(id int) {
+func get_blogentry(dbh *sql.DB, id int) map[string]string {
 	// Given an id in the blogentry table, return everything
 	// about it needed to display it, including tags.
 	// SELECT * FROM blogentry WHERE id=$id
 	// and also
 	// SELECT id as tagid, tagname FROM tag WHERE tagid IN (
 	//	SELECT tagid FROM blogentry_tags WHERE beid=$id)
+	var mymap = make(map[string]string)
+	mymap["title"] = "Fake title for blogentry " + strconv.Itoa(id)
+	mymap["zeit"] = "1514238175"
+	mymap["body"] = "Fake blogentry body"
+	return mymap
 }
 
-func identify_last_n_blogentries(count int, include_private bool) {
+func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) []string {
 	// Returns blogentry(id) for the last up-to-$count blogentries
 	// NOTE: It can return fewer than requested if there are not that many.
 	// It will return the entries ordered so newer are earlier.
 	// SELECT id FROM blogentry WHERE hidden=$include_private
 	// 	ORDER BY zeit DESC LIMIT $count
+	var ret = []string{"1", "2"}
+	return ret
 }
 
 func tagid_for_tag(tag string) {
@@ -135,4 +168,13 @@ func get_review(id int) {
 	// and also
 	// SELECT name FROM review_target WHERE id=(target from previous query)
 	// and possibly the same for review_topic too, not sure.
+}
+
+// Finally our main function
+func main() {
+	port := getenv_with_default("DWS_PORT", "8000")
+	http.HandleFunc("/",		dispatch_root)
+	http.HandleFunc("/blog",	dispatch_blog_htmlview)
+	http.HandleFunc("/site.css",	dispatch_css)
+	http.ListenAndServe(":" + port, nil)
 }
