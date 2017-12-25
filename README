@@ -20,3 +20,8 @@ database for the app in the environment variables:
 	DWS_PASS
 	DWS_DB
 
+Status
+------
+This code does not come even close to doing its intended purpose yet. I'm
+putting it up way early so others can follow along as I turn it into something
+functional.
