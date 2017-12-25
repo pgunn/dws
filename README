@@ -1,0 +1,22 @@
+DWS (dachte web services) is software designed to act as a blog and review
+engine for my website. You can install and use it too.
+
+Installation
+------------
+DWS is a standalone webserver that you should configure your existing
+webserver to proxy some traffic to. It's designed to be container-friendly
+and is significantly configured with environment variables
+
+
+It runs on a high port, 8000 by default but configurable with the DWS_PORT
+environment variable.
+
+It uses Postgres to store its data. Configure your postgres for password
+authentication, load the tables needed for the app (in the sql/ directory),
+create an account with the ability to read from those tables, and
+configure your launching environment to expose the username, password, and
+database for the app in the environment variables:
+	DWS_USER
+	DWS_PASS
+	DWS_DB
+
