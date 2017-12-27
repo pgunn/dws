@@ -79,7 +79,19 @@ func get_dbresults(res *sql.Rows) {
 func get_dbcol(res *sql.Rows) []string {
 	// For the records returned by the passed in query handle,
 	// return all their first tuple members as an array
-	return nil
+	// XXX Right now the database/sql package requires the cardinality
+	// of the tuple to be matched by the arguments to scan. I can work around
+	// this by calling ColumnTypes and building junk variables, but this prototyping
+	// will just accept these undesirable conventions instead.
+	// Also: see if there's a 2d-array interface to Rows.
+	// Or .. or we could decide these abstractions are not helpful for this interface
+	var ret []string
+	for res.Next() {
+		var resval string
+		_ = res.Scan(&resval)
+		ret = append(ret, resval)
+	}
+	return ret
 }
 
 func get_dbval() {
@@ -115,9 +127,22 @@ func get_blogentry(dbh *sql.DB, id int) map[string]string {
 	// SELECT id as tagid, tagname FROM tag WHERE tagid IN (
 	//	SELECT tagid FROM blogentry_tags WHERE beid=$id)
 	var mymap = make(map[string]string)
-	mymap["title"] = "Fake title for blogentry " + strconv.Itoa(id)
-	mymap["zeit"] = "1514238175"
-	mymap["body"] = "Fake blogentry body"
+
+	dbq, err := dbh.Query("SELECT title, zeit, body FROM blogentry WHERE id=$1", id)
+	if err != nil {
+		mymap["title"] = "Fake title for blogentry " + strconv.Itoa(id)
+		mymap["zeit"] = "1514238175"
+		mymap["body"] = "Fake blogentry body"
+		log.Print(err)
+		return mymap
+	}
+	for dbq.Next() {
+		var title, zeit, body string
+		dbq.Scan(&title, &zeit, &body)
+		mymap["title"] = title
+		mymap["zeit"] = zeit
+		mymap["body"] = body
+	}
 	return mymap
 }
 
@@ -127,7 +152,19 @@ func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) [
 	// It will return the entries ordered so newer are earlier.
 	// SELECT id FROM blogentry WHERE hidden=$include_private
 	// 	ORDER BY zeit DESC LIMIT $count
-	var ret = []string{"1", "2"}
+	var ret []string
+	dbq, err := dbh.Query("SELECT id FROM blogentry WHERE private=$1 ORDER BY zeit LIMIT $2", include_private, count)
+	if err != nil {
+		ret = append(ret, "1")
+		ret = append(ret, "2")
+		log.Print(err)
+		return ret
+	}
+	for dbq.Next() {
+		var retval string
+		err = dbq.Scan(&retval)
+		ret = append(ret, retval)
+	}
 	return ret
 }
 

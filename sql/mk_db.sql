@@ -35,7 +35,7 @@ CREATE TABLE review_target
 	(
 	id SERIAL PRIMARY KEY NOT NULL,
 	name TEXT NOT NULL, -- Unique is tempting
-	topic INTEGER REFERENCES reivew_topic(id)
+	topic INTEGER REFERENCES review_topic(id)
 	);
 
 CREATE TABLE review
@@ -70,7 +70,17 @@ INSERT INTO config(name, value, avalues, description) VALUES ('doing_frontpage',
 
 INSERT INTO config(name, value, avalues, description) VALUES ('postguard', 1, 'b', 'Enable postguard? This blocks some spam but will block AOL and Tor users from posting');
 
+INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1414343745, 'forcedtext', 'This article is about cats', 'I really like cats. I have often had them as pets', 'TMBG - Snail Shell');
+INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1514343745, 'forcedtext', 'This article is about blogs', 'I sometimes write blog software', 'Death Cab for Cutie - Good Help');
+
 -- POUND had two features we might eventually add back in:
 -- webpaths configured in the database, and uploading of files.
 -- I left those out for now because even if we do them,
 -- we might do them differently.
+
+-- The latter should be revised if we ever do privilege separation;
+-- we might reasonably make a second database user with writing privs
+-- that we only use to do new posts, assuming ordinary users never
+-- do things that write to the database.
+
+GRANT ALL ON ALL TABLES IN SCHEMA public TO pound;
