@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	_ "github.com/lib/pq"
 )
 
@@ -53,6 +54,22 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 
 func dispatch_css(w http.ResponseWriter, r *http.Request) {
 	// Send the CSS needed for DWS
+	// All the CSS is in the "themedata" and "theme" tables in the database.
+	// 1) The "BaseTheme" is always loaded, and if the user sends a cookie specifying
+	//    an additional theme we'll load that too.
+	// 2) If necessary we'll reconcile the themes, and transform meta-elements into
+	//    their final form
+	// 3) We send it onwards!
+	// TODO: Most of step two. We haven't built the cookie-handling logic yet and are
+	//       chasing MVP so we'll only load and transform the BaseTheme
+	// Also note: Just for ease of debugging we're going to try to output things ordered by
+	//            css type (CLASS vs ID vs TAG), then
+	//            element
+	// DISCLAIMER: I am not particularly proficient in CSS. The fact that this works doesn't mean
+	//             it's a good place for others to learn CSS. I fumbled through it the first time
+	//             with a lot of trial-and-error and am now cargo-culting my own code. Caveat emptor.
+	// This is loosely based off of:
+	//   https://github.com/pgunn/pound/blob/master/mod_perl/MyApache/POUND/POUNDCSS.pm
 	w.Header().Set("Content-Type", "text/css")
 }
 
@@ -116,6 +133,57 @@ func getenv_with_default(key, fallback string) string {
 func get_config_value(key string) {
 	// Given a key, return its value in the config table
 	// SELECT value FROM config WHERE name=$key
+}
+
+// CSS stuff
+
+func get_css(dbh *sql.DB, extra string) string {
+	// Returns a string composed of the CSS for
+	// everything DWS serves. If extra is not nil, integrates
+	// the named theme into that CSS.
+	var collector []string
+	var ret string
+	var all_css = make(map[string]map[string]map[string]string)
+
+	dbq, err := dbh.Query("SELECT csstype, csselem, cssval FROM themedata WHERE themeid=(SELECT id FROM theme WHERE name='BaseTheme')")
+	if err != nil {
+		log.Print(err)
+		return ret
+	}
+	for dbq.Next() { // Get everything we want from the database unless there's a theme
+		var csstype, csselem, cssprop, cssval string
+		dbq.Scan(&csstype, &csselem, &cssprop, &cssval)
+		if      csstype == "CLASS" {
+		} else if csstype == "ID"    {
+		} else if csstype == "TAG"   {
+		} else {continue} // Should probably output a warning
+
+		all_css[csstype][csselem][cssprop] = cssval
+	}
+	// TODO: Code to retrieve/overlay a theme goes here
+	// Next: prepare all that for display
+	for csstype, _ := range all_css {
+		var prefix string
+		if csstype == "CLASS" { prefix = "." // It's like the Go designers did a survey to find
+		} else if csstype == "ID" { prefix = "#" // the ugliest way to express this
+		} else if csstype == "TAG" {prefix = ""}
+		for csselem, _ := range all_css[csstype] {
+			collector = append(collector, prefix + csselem + "\n{\n")
+			for cssprop, _ := range all_css[csstype][csselem] {
+				var content = all_css[csstype][csselem][cssprop]
+				if cssprop == "E" || cssprop == "B" { // These are for css properties that need verbatim handling
+					if content != "" {
+						collector = append(collector, content + "\n")
+					}
+				} else { // Most properties are key-value and fit nicely into this form instead
+						collector = append(collector, cssprop + ": " + content + ";\n")
+				}
+			}
+			collector = append(collector, "}\n\n")
+		}
+	}
+	ret = strings.Join(collector, "")
+	return ret
 }
 
 // Blog stuff
