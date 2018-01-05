@@ -35,7 +35,29 @@ func dispatch_root(w http.ResponseWriter, r *http.Request) {
 }
 
 func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
-	// FIXME: While we work this out, this will give a text/plain response.
+	// FIXME: To HTML! Port the below functions from POUNDBLOGHTML
+	var dbh = db_connect()
+	var resp = ""
+	// display_blogmain() + display_entrywrapper()
+	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
+	for _, entryid := range last_ten_entries {
+		// display_bnode()
+		entryid_i , _ := strconv.Atoi(entryid) // XXX Consider having last_ten_entries be []integer
+		var blogentry = get_blogentry(dbh, entryid_i )
+		resp += "Begin blogentry\n"
+		resp += "Title: " + blogentry["title"] + "\n"
+		resp += "Posted: " + blogentry["zeit"] + "\n"
+		resp += "Body\n-------------------\n" + blogentry["body"] + "\n--------------------\n"
+		resp += "End blogentry\n\n"
+	}
+	// close_entrywrapper()
+	// display_footer()
+	w.Header().Set("Content-Type", "text/plain") // Send HTTP headers as late as possible, ideally after errors might happen
+	fmt.Fprintf(w, resp)
+}
+
+func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
+	// Saving this because it's a good template for other views of the blog data
 	var dbh = db_connect()
 	var resp = ""
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
