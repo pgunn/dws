@@ -17,22 +17,17 @@ import (
 // and are executed by the webserver functions
 
 func dispatch_root(w http.ResponseWriter, r *http.Request) {
+	var collector []string
+	collector = append(collector, sthtml("Main page", true, false))
+	collector = append(collector, "<ul>\n")
+	collector = append(collector, "\t<li><a href=\"blog\">Blog</a></li>\n")
+	collector = append(collector, "\t<li><a href=\"reviews\">Reviews</a></li>\n")
+	collector = append(collector, "\t<li><a href=\"/site.css\">CSS</a></li>\n")
+	collector = append(collector, "</ul>\n")
+	collector = append(collector, endhtml() )
+	resp := strings.Join(collector, "")
 	w.Header().Set("Content-Type", "text/html")
-	io.WriteString(w, "Main page<br />")
-	var dbh = db_connect()
-	config_names, err := dbh.Query("SELECT id, name FROM config")
-	if err != nil {
-		io.WriteString(w, "Error: " + err.Error() )
-		return
-	}
-	io.WriteString(w, "Got past database init<br />")
-	defer config_names.Close()
-	var id string
-	var name string
-	for config_names.Next() {
-		err = config_names.Scan(&id, &name)
-		io.WriteString(w, "Row: " + string(id) + ": " + name + "<br />")
-	}
+	io.WriteString(w, resp)
 }
 
 func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
