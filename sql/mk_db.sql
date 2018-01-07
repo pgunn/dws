@@ -180,7 +180,7 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'footer',        'background',            'black');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'footer',        'color',                 'lightgrey');
 
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'centrearea',    'Position',              'absolute');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'centrearea',    'Position',              'relative');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'centrearea',    'overflow',              'auto');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'centrearea',    'width',                 '100%');
 
