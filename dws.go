@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -18,20 +18,20 @@ import (
 
 func dispatch_root(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, "Main page<br />")
+	io.WriteString(w, "Main page<br />")
 	var dbh = db_connect()
 	config_names, err := dbh.Query("SELECT id, name FROM config")
 	if err != nil {
-		fmt.Fprintf(w, "Error: " + err.Error() )
+		io.WriteString(w, "Error: " + err.Error() )
 		return
 	}
-	fmt.Fprintf(w, "Got past database init<br />")
+	io.WriteString(w, "Got past database init<br />")
 	defer config_names.Close()
 	var id string
 	var name string
 	for config_names.Next() {
 		err = config_names.Scan(&id, &name)
-		fmt.Fprintf(w, "Row: " + string(id) + ": " + name + "<br />")
+		io.WriteString(w, "Row: " + string(id) + ": " + name + "<br />")
 	}
 }
 
@@ -65,7 +65,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "</div><!-- footer -->\n") // TODO: Make sure we're closing divs in the right order
 	w.Header().Set("Content-Type", "text/plain") // Send HTTP headers as late as possible, ideally after errors might happen
 	resp := strings.Join(collector, "")
-	fmt.Fprintf(w, resp)
+	io.WriteString(w, resp)
 }
 
 func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +83,7 @@ func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
 		resp += "End blogentry\n\n"
 	}
 	w.Header().Set("Content-Type", "text/plain") // Send HTTP headers as late as possible, ideally after errors might happen
-	fmt.Fprintf(w, resp)
+	io.WriteString(w, resp)
 }
 
 func dispatch_css(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +104,11 @@ func dispatch_css(w http.ResponseWriter, r *http.Request) {
 	//             with a lot of trial-and-error and am now cargo-culting my own code. Caveat emptor.
 	// This is loosely based off of:
 	//   https://github.com/pgunn/pound/blob/master/mod_perl/MyApache/POUND/POUNDCSS.pm
+	var dbh = db_connect()
+	resp := get_css(dbh, "")
 	w.Header().Set("Content-Type", "text/css")
+	w.WriteHeader(200)
+	io.WriteString(w, resp)
 }
 
 // #############
@@ -283,13 +287,13 @@ func get_config_value(key string) {
 
 func get_css(dbh *sql.DB, extra string) string {
 	// Returns a string composed of the CSS for
-	// everything DWS serves. If extra is not nil, integrates
+	// everything DWS serves. If extra is not empty, integrates
 	// the named theme into that CSS.
 	var collector []string
 	var ret string
 	var all_css = make(map[string]map[string]map[string]string)
 
-	dbq, err := dbh.Query("SELECT csstype, csselem, cssval FROM themedata WHERE themeid=(SELECT id FROM theme WHERE name='BaseTheme')")
+	dbq, err := dbh.Query("SELECT csstype, csselem, cssprop, cssval FROM themedata WHERE themeid=(SELECT id FROM theme WHERE name='BaseTheme')")
 	if err != nil {
 		log.Print(err)
 		return ret
@@ -301,7 +305,13 @@ func get_css(dbh *sql.DB, extra string) string {
 		} else if csstype == "ID"    {
 		} else if csstype == "TAG"   {
 		} else {continue} // Should probably output a warning
-
+		// Need to fill in bits of the chained structure that are not present.
+		if _, present := all_css[csstype]; !present {
+			all_css[csstype] = make(map[string]map[string]string)
+		}
+		if _, present := all_css[csstype][csselem]; !present {
+			all_css[csstype][csselem] = make(map[string]string)
+		}
 		all_css[csstype][csselem][cssprop] = cssval
 	}
 	// TODO: Code to retrieve/overlay a theme goes here
