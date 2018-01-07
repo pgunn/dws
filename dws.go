@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 	_ "github.com/lib/pq"
 )
 
@@ -44,11 +45,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 		// display_bnode()
 		entryid_i , _ := strconv.Atoi(entryid) // XXX Consider having last_ten_entries be []integer
 		var blogentry = get_blogentry(dbh, entryid_i )
-		resp += "Begin blogentry\n"
-		resp += "Title: " + blogentry["title"] + "\n"
-		resp += "Posted: " + blogentry["zeit"] + "\n"
-		resp += "Body\n-------------------\n" + blogentry["body"] + "\n--------------------\n"
-		resp += "End blogentry\n\n"
+		resp += display_bnode(blogentry)
 	}
 	// close_entrywrapper()
 	// display_footer()
@@ -93,6 +90,85 @@ func dispatch_css(w http.ResponseWriter, r *http.Request) {
 	// This is loosely based off of:
 	//   https://github.com/pgunn/pound/blob/master/mod_perl/MyApache/POUND/POUNDCSS.pm
 	w.Header().Set("Content-Type", "text/css")
+}
+
+// #############
+// POUNDBLOGHTML/POUNDHTML
+// These functions should not make database calls, and should just be simple
+// string manipulation
+// TODO: Consider renaming these
+func display_blogmain() string {
+	return ""
+}
+
+func display_entrywrapper() string {
+	return ""
+}
+
+func display_bnode(bentrydata map[string]string) string {
+	// Return HTML for a single blog entry. Called both for single-entry view
+	// as well as showing a bunch on a page. This code is a lot less abstract than
+	// the equivalent POUND code, since this blog engine doesn't do nearly as much.
+	// title zeit body
+	//if val, present := bentrydata["tags"]; present {
+		// TODO: Old code turned this into a list of links to topic/tag pages
+	//}
+
+	// TODO: Footer section (also passed to bnode) with a link to just this entry
+
+	// Render the markup language.
+	var content = do_markup(bentrydata["body"], "blogentryv1")
+	var ret = draw_bnode(bentrydata, content)
+	// draw_bnode() consumed the output of that and actually spat out the code.
+	// in draw_bnode()
+	return ret
+}
+
+func close_entrywrapper() string {
+	return ""
+}
+
+func display_footer() string {
+	return ""
+}
+
+func draw_bnode(bentrydata map[string]string, content string) string {
+	// We'll have to extend the signature for both topics and the footer section
+	var collector []string
+
+	collector = append(collector, "<div class=\"jentry\">\n")
+	collector = append(collector, "\t<div class=\"jehead\">\n")
+	collector = append(collector, "\t<div class=\"jetitle\">" + bentrydata["title"] + "</div>\n")
+	// Time
+	var zeit_int, _ = strconv.ParseInt(bentrydata["zeit"], 10, 64) // base 10, 64-bit output
+	var timestring = time.Unix(zeit_int, 0).Format(time.RFC3339)
+	collector = append(collector, "\t<div class=\"jeheadtime\">")
+	collector = append(collector, "<div class=\"jeheadtimet\">") // I don't remember why we had two divs here
+	collector = append(collector, "<div class=\"jeheadtimetext\">" + timestring + "</div>")
+	collector = append(collector, "</div><!-- jeheadtimet -->")
+	collector = append(collector, "</div><!-- jeheadtime -->")
+	// TODO Code for jemisc, the extensible area for extra tabular data like music
+	collector = append(collector, "</div><!-- jehead -->\n")
+	collector = append(collector, "\t<div class=\"jbody\">\n")
+	collector = append(collector, "<p>" + content + "</p>\n")
+	collector = append(collector, "\t</div><!-- jbody -->\n")
+	collector = append(collector, "\t<div class=\"jetail\">\n")
+	// TODO Tail code here
+	collector = append(collector, "\t</div><!-- jetail -->\n")
+	collector = append(collector, "</div><!-- jentry -->")
+	collector = append(collector, "<br /><br />\n\n")
+	var ret = strings.Join(collector, "")
+	return ret
+}
+
+// #############
+// POUNDMarkup
+// This code implements the markup language I used in my classic blog. It's similar to
+// Mediawiki's markup. I liked it, so we implement something similar here
+
+func do_markup(data string, rendermode string) string {
+	// FIXME
+	return data
 }
 
 // #############
@@ -175,7 +251,7 @@ func get_css(dbh *sql.DB, extra string) string {
 	for dbq.Next() { // Get everything we want from the database unless there's a theme
 		var csstype, csselem, cssprop, cssval string
 		dbq.Scan(&csstype, &csselem, &cssprop, &cssval)
-		if      csstype == "CLASS" {
+		if        csstype == "CLASS" {
 		} else if csstype == "ID"    {
 		} else if csstype == "TAG"   {
 		} else {continue} // Should probably output a warning
@@ -186,9 +262,9 @@ func get_css(dbh *sql.DB, extra string) string {
 	// Next: prepare all that for display
 	for csstype, _ := range all_css {
 		var prefix string
-		if csstype == "CLASS" { prefix = "." // It's like the Go designers did a survey to find
-		} else if csstype == "ID" { prefix = "#" // the ugliest way to express this
-		} else if csstype == "TAG" {prefix = ""}
+		if        csstype == "CLASS" { prefix = "." // It's like the Go designers did a survey to find
+		} else if csstype == "ID"    { prefix = "#" // the ugliest way to express this
+		} else if csstype == "TAG"   { prefix = ""}
 		for csselem, _ := range all_css[csstype] {
 			collector = append(collector, prefix + csselem + "\n{\n")
 			for cssprop, _ := range all_css[csstype][csselem] {
@@ -216,6 +292,7 @@ func get_blogentry(dbh *sql.DB, id int) map[string]string {
 	// and also
 	// SELECT id as tagid, tagname FROM tag WHERE tagid IN (
 	//	SELECT tagid FROM blogentry_tags WHERE beid=$id)
+	// TODO: Actually do the tags part
 	var mymap = make(map[string]string)
 
 	dbq, err := dbh.Query("SELECT title, zeit, body FROM blogentry WHERE id=$1", id)
