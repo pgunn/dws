@@ -47,6 +47,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	//   * the calculated number of archive pages
 	//   * the name of the blog owner (put this in the config table)
 	//   * RSS/Atom enabledness?
+	collector = append(collector, sthtml("My blog", true, false)) // FIXME
 	collector = append(collector, display_blogmain("My Blog Title", "My Name", "http://127.0.0.1/cat.jpg", nil, 40, false)) // FIXME
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	// display_entrywrapper()
@@ -63,7 +64,8 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "<div id=\"footer\">\n")
 	collector = append(collector, "Site served by DWS\n")
 	collector = append(collector, "</div><!-- footer -->\n") // TODO: Make sure we're closing divs in the right order
-	w.Header().Set("Content-Type", "text/plain") // Send HTTP headers as late as possible, ideally after errors might happen
+	collector = append(collector, endhtml() ) // FIXME
+	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
 	resp := strings.Join(collector, "")
 	io.WriteString(w, resp)
 }
@@ -209,6 +211,36 @@ func draw_bnode(bentrydata map[string]string, content string) string {
 	collector = append(collector, "<br /><br />\n\n")
 	var ret = strings.Join(collector, "")
 	return ret
+}
+
+func sthtml(title string, public bool, do_feeds bool) string {
+	var collector []string
+
+	if !public {
+		collector = append(collector, "<META name=\"ROBOTS\" context=\"NOINDEX\">\n")
+	}
+	collector = append(collector, "<!DOCTYPE html PUBLIC \"-//W3C/DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n")
+	collector = append(collector, "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n")
+	collector = append(collector, "<head>\n")
+	collector = append(collector, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n")
+	collector = append(collector, "<style type=\"text/css\">\n")
+	collector = append(collector, "@import url(\"/site.css\");\n") // make this a configurable path?
+	collector = append(collector, "</style>\n")
+	collector = append(collector, "<title>" + title + "</title>\n")
+	if do_feeds {
+		var rss_url  = ""
+		var atom_url = ""
+		collector = append(collector, "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"" + rss_url +  "\" />\n")
+		collector = append(collector, "<link rel=\"alternate\" type=\"application/atom+xml\" title=\"Atom\" href=\"" + atom_url +  "\" />\n")
+	}
+	collector = append(collector, "</head>\n")
+	collector = append(collector, "<body>\n")
+	var ret = strings.Join(collector, "")
+	return ret
+}
+
+func endhtml() string {
+	return "</body></html>"
 }
 
 // #############
