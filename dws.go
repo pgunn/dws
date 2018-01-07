@@ -38,18 +38,33 @@ func dispatch_root(w http.ResponseWriter, r *http.Request) {
 func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	// FIXME: To HTML! Port the below functions from POUNDBLOGHTML
 	var dbh = db_connect()
-	var resp = ""
-	// display_blogmain() + display_entrywrapper()
+	var collector []string
+	// display_blogmain() generates the framing content for a blogview, including
+	// all the sidebars and topbar. If we want it to be pure-html (or at least restricted to
+	//     looking up URL patterns), we need to prep the following data for it and pass it in:
+	//   * all the topics the blog knows about (maybe filtered down to those that have associated entries)
+	//   * the image for the blog
+	//   * the calculated number of archive pages
+	//   * the name of the blog owner (put this in the config table)
+	//   * RSS/Atom enabledness?
+	collector = append(collector, display_blogmain("My Blog Title", "My Name", "http://127.0.0.1/cat.jpg", nil, 40, false)) // FIXME
+	collector = append(collector, "<div id=\"entrypart\">\n")
+	// display_entrywrapper()
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
 		// display_bnode()
 		entryid_i , _ := strconv.Atoi(entryid) // XXX Consider having last_ten_entries be []integer
 		var blogentry = get_blogentry(dbh, entryid_i )
-		resp += display_bnode(blogentry)
+		collector = append(collector, display_bnode(blogentry))
 	}
-	// close_entrywrapper()
+	collector = append(collector, "</div><!-- entrypart -->\n")
+	collector = append(collector, "</div><!-- centrearea -->\n") // TODO: Make sure we're closing divs in the right order
 	// display_footer()
+	collector = append(collector, "<div id=\"footer\">\n")
+	collector = append(collector, "Site served by DWS\n")
+	collector = append(collector, "</div><!-- footer -->\n") // TODO: Make sure we're closing divs in the right order
 	w.Header().Set("Content-Type", "text/plain") // Send HTTP headers as late as possible, ideally after errors might happen
+	resp := strings.Join(collector, "")
 	fmt.Fprintf(w, resp)
 }
 
@@ -95,10 +110,41 @@ func dispatch_css(w http.ResponseWriter, r *http.Request) {
 // #############
 // POUNDBLOGHTML/POUNDHTML
 // These functions should not make database calls, and should just be simple
-// string manipulation
+// string manipulation (or at least restricted to looking up global settings in the config
+// table and URL-path stuff)
 // TODO: Consider renaming these
-func display_blogmain() string {
-	return ""
+func display_blogmain(title string, owner string, blogimg string, topics []string, num_archives int, do_feeds bool) string {
+	var collector []string
+	caption_extra := "A blog by " + owner
+
+	collector = append(collector, "<div id=\"toparea\">\n")
+	collector = append(collector, "<div id=\"caption\">\n")
+	collector = append(collector, "\t<div id=\"picarea\">\n")
+	collector = append(collector, "\t\t<img src=\"" + blogimg + "\" />\n")
+	collector = append(collector, "\t</div><!-- picarea -->\n")
+	collector = append(collector, "\t<div id=\"picareatext\">\n")
+	collector = append(collector, "\t\t<h1>" + title + "</h1>\n")
+	collector = append(collector, "\t\t<h1>" + caption_extra + "</h1>")
+	collector = append(collector, "\t</div><!-- picareatext -->\n")
+	collector = append(collector, "</div><!-- caption -->\n")
+	collector = append(collector, "</div><!-- toparea -->\n")
+
+	// TODO tmentry div and its contents (topics)
+	collector = append(collector, "<div id=\"centrearea\">\n") // We leave this open
+	collector = append(collector, "\t<div id=\"menupart\">\n")
+	collector = append(collector, "\t\t<div id=\"archmenu\" class=\"gmenu\">\n")
+	collector = append(collector, "\t\t\tArchives\n")
+	// TODO archives
+	collector = append(collector, "\t\t</div><!-- archmenu -->\n")
+	collector = append(collector, "\t\t<div id=\"topicmenu\" class=\"gmenu\">\n")
+	collector = append(collector, "\t\t\tTopics\n")
+	// TODO Topics
+	collector = append(collector, "\t\t</div><!-- topicmenu -->")
+	collector = append(collector, "\t\t<br />\n")
+	collector = append(collector, "\t</div><!-- menupart -->\n")
+
+	var ret = strings.Join(collector, "")
+	return ret
 }
 
 func display_entrywrapper() string {
