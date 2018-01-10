@@ -137,16 +137,36 @@ func getenv_with_default(key, fallback string) string {
 // ###############
 // application-database calls
 
-func get_config_value(key string) {
+func get_config_value(dbh *sql.DB, key string) string {
 	// Given a key, return its value in the config table
-	// SELECT value FROM config WHERE name=$key
+	ret := ""
+	dbq, err := dbh.Query("SELECT value FROM config WHERE name=$1", key)
+	if err != nil {
+		return ""
+	}
+	for dbq.Next() {
+		dbq.Scan(&ret)
+	}
+	return ret
 }
 
 // Review stuff
-func get_all_topics() {
+func get_all_topics(dbh *sql.DB) map[string]string {
 	// Returns a hashmap of { review_topic => review_topic_id }
 	// including all review topics
-	// SELECT id, name FROM review_topic
+	var ret map[string]string
+
+	dbq, err := dbh.Query("SELECT id, name FROM review_topic")
+	if err != nil {
+		return ret
+	}
+	for dbq.Next() {
+		var topic string
+		var id string
+		dbq.Scan(&id, &topic)
+		ret[id] = topic
+	}
+	return ret
 }
 
 func get_all_targets_in_topicid(topicid int) {
