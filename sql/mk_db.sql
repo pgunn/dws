@@ -28,13 +28,15 @@ CREATE TABLE blogentry_tags
 CREATE TABLE review_topic
 	(
 	id SERIAL PRIMARY KEY NOT NULL,
-	name TEXT UNIQUE NOT NULL
+	name TEXT UNIQUE NOT NULL,
+	safename TEXT UNIQUE NOT NULL
 	);
 
 CREATE TABLE review_target
 	(
 	id SERIAL PRIMARY KEY NOT NULL,
 	name TEXT NOT NULL, -- Unique is tempting
+	safename TEXT UNIQUE NOT NULL,
 	topic INTEGER REFERENCES review_topic(id)
 	);
 

@@ -16,8 +16,8 @@ func dispatch_root(w http.ResponseWriter, r *http.Request) {
 	var collector []string
 	collector = append(collector, sthtml("Main page", true, false))
 	collector = append(collector, "<ul>\n")
-	collector = append(collector, "\t<li><a href=\"blog\">Blog</a></li>\n")
-	collector = append(collector, "\t<li><a href=\"reviews\">Reviews</a></li>\n")
+	collector = append(collector, "\t<li><a href=\"blog/\">Blog</a></li>\n")
+	collector = append(collector, "\t<li><a href=\"reviews/\">Reviews</a></li>\n")
 	collector = append(collector, "\t<li><a href=\"/site.css\">CSS</a></li>\n")
 	collector = append(collector, "</ul>\n")
 	collector = append(collector, endhtml() )
@@ -102,6 +102,30 @@ func dispatch_css(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, resp)
 }
 
+func dispatch_reviews_frontpage(w http.ResponseWriter, r *http.Request) {
+	// This page displays a list of links to review topics - the top level category
+	// under which particular reviews are categorised. Think stuff like
+	// "restaurants". It should say how many targets there are under each topic.
+
+}
+
+func dispatch_reviews_topical(w http.ResponseWriter, r *http.Request) {
+	// This page displays a list of links to review targets under the given topic.
+	// It takes a parameter and thus needs to parse its URL further.
+	// The URL-pattern for these is /reviews/topic/$safename
+	// (safename is a normalised version of the name that must be composed of boring characters)
+	// It should say how many "thoughts" there are for each review target.
+
+}
+
+func dispatch_reviews_target(w http.ResponseWriter, r *http.Request) {
+	// This page displays all the reviews (aka thoughts) for the named review target.
+	// It takes a parameter and thus needs to parse its URL further.
+	// The URL-pattern for these is /reviews/on/$safename
+	// (safename is a normalised version of the name that must be composed of boring characters)
+
+}
+
 func getenv_with_default(key, fallback string) string {
 	// Try to read something to the environment, with a fallback value
 	env_val := os.Getenv(key)
@@ -114,8 +138,11 @@ func getenv_with_default(key, fallback string) string {
 // Finally our main function
 func main() {
 	port := getenv_with_default("DWS_PORT", "8000")
-	http.HandleFunc("/",		dispatch_root)
-	http.HandleFunc("/blog",	dispatch_blog_htmlview)
-	http.HandleFunc("/site.css",	dispatch_css)
+	http.HandleFunc("/",			dispatch_root)
+	http.HandleFunc("/blog/",		dispatch_blog_htmlview)
+	http.HandleFunc("/reviews/",		dispatch_reviews_frontpage)
+	http.HandleFunc("/reviews/topic/",	dispatch_reviews_topical)
+	http.HandleFunc("/reviews/on/",		dispatch_reviews_target)
+	http.HandleFunc("/site.css",		dispatch_css)
 	http.ListenAndServe(":" + port, nil)
 }
