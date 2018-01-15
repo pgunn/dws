@@ -1,4 +1,4 @@
---
+-- This sets up tables and does necessary inserts needed for the software to function.
 
 CREATE TABLE blogentry
 	(
@@ -87,16 +87,9 @@ INSERT INTO config(name, value, avalues, description) VALUES ('entries_per_archp
 INSERT INTO config(name, value, avalues, description) VALUES ('blogstatic', 'http://localhost', 't[URL]', 'Base URL (includes http part) for the server');
 INSERT INTO config(name, value, avalues, description) VALUES ('main_blogname', 'dachte', 't', 'Shortname of the "main" blog (if any)');
 
--- Sample blogentry content
-INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1414343745, 'forcedtext', 'This article is about cats', 'I really like cats. I have often had them as pets', 'TMBG - Snail Shell');
-INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1514343745, 'forcedtext', 'This article is about blogs', 'I sometimes write blog software', 'Death Cab for Cutie - Good Help');
-
 -- We should store CSS in the database. Here are two themes from my previous blogging software.
 INSERT INTO theme(name, description) VALUES('BaseTheme',   'All other themes use this as a basis');
-INSERT INTO theme(name, description) VALUES('EasyReading', 'Theme designed for easier reading');
-INSERT INTO theme(name, description) VALUES('LitGlass',    'Funky lit-glass theme');
 -- CSS defaults
--- TODO: Why did I do "E"? Is it important or legacy?
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'TAG',   'body',          'E',                     '');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'TAG',   'body',          'background',            '#aaaccc');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'TAG',   'body',          'font-family',           '"Verdana", sans-serif');
@@ -275,22 +268,6 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'noexist',       'color',                 'red');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'namespace',     'color',                 'orange');
 
--- Load first theme
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='EasyReading'), 'ID',    'caption', 'color',        'black');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='EasyReading'), 'CLASS', 'jbody',   'background',   'lightgrey');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='EasyReading'), 'CLASS', 'jbody',   'color',        'black');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='EasyReading'), 'CLASS', 'body',    'background',   'black');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='EasyReading'), 'CLASS', 'caption', 'background',   'lightgrey');
--- Load second theme
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'CLASS',    'jbody',   'background',   'url(/ripple.jpg)');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'CLASS',    'jbody',   'color',        'black');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'TAG',      'body',    'background',   'url(/wexner.jpg)');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'ID',       'caption', 'filter',       'alpha(opacity=70)');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'ID',       'caption', '-moz-opacity', '0.7');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'CLASS',    'jentry',  'color',        'darkgrey');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'CLASS',    'jentry',  'background',   'darkblue');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'CLASS',    'jentry',  '-moz-opacity', '0.9');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='LitGlass'), 'CLASS',    'jentry',  'filter',       'alpha(opacity=90)');
 -- POUND had two features we might eventually add back in:
 -- webpaths configured in the database, and uploading of files.
 -- I left those out for now because even if we do them,
