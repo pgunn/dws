@@ -11,17 +11,37 @@ and is significantly configured with environment variables
 It runs on a high port, 8000 by default but configurable with the DWS_PORT
 environment variable.
 
-It uses Postgres to store its data. Configure your postgres for password
-authentication, load the tables needed for the app (in the sql/ directory),
-create an account with the ability to read from those tables, and
-configure your launching environment to expose the username, password, and
-database for the app in the environment variables:
-	DWS_USER
-	DWS_PASS
-	DWS_DB
+It uses Postgres to store its data. 
+
+Configuration
+-------------
+Much configuration is in the database, but the following environment variables
+handle the basics:
+
+* DWS_PORT (default 8000) - what port to serve on
+* DWS_DB (default dws) - what database to connect to
+* DWS_USER (default pound) - what postgres user to use to connect to that database
+* DWS_PASS (default posterkid) - what password to use with the above user to connect to that database
+
+Before any of this will work, you will want to create that user in postgres,
+you'll want to setup postgres for password authentication. This is done by modifying
+pg_hba.conf, and then doing something like 
+CREATE USER pound WITH PASSWORD 'posterkid';
+from the administrator account. Operational knowledge on Postgres is generally
+useful. You will probably also want to make another account to administer the app, and give it
+the SUPERUSER attribute.
+
+After you do that, you will want to load the tables and minimal data, and possibly
+the sample data. Something like:
+
+$ createdb dws
+$ psql dws < sql/mk_db.sql
+$ psql dws < sql/db_load_sampledata.sql (this is optional)
 
 Status
 ------
-This code does not come even close to doing its intended purpose yet. I'm
-putting it up way early so others can follow along as I turn it into something
-functional.
+This code is fairly bare-bones at this point, and right now it lacks a way to add new content
+into the system. Initially we will provide a CLI utility to do this. A system for web input
+for a system that's meant for only a single person to post content, particularly when that person
+(me) likes text editors, and when that would have all sorts of security issues, is at least a low
+priority.

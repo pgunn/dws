@@ -13,9 +13,9 @@ import (
 
 func db_connect() *sql.DB {
 	// Connect to DB, return database handle
-	var db_user = "pound" // TODO: Use env vars
-	var db_pass = "posterkid"
-	var db_db   =  "dws"
+	var db_user = getenv_with_default("DWS_USER", "pound")
+	var db_pass = getenv_with_default("DWS_PASS", "posterkid")
+	var db_db   = getenv_with_default("DWS_DB",   "dws")
 	db, err := sql.Open("postgres", "postgres://" + db_user + ":" + db_pass + "@localhost/" + db_db + "?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
