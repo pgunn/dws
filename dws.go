@@ -27,7 +27,6 @@ func dispatch_root(w http.ResponseWriter, r *http.Request) {
 }
 
 func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
-	// FIXME: To HTML! Port the below functions from POUNDBLOGHTML
 	var dbh = db_connect()
 	var collector []string
 	// display_blogmain() generates the framing content for a blogview, including
@@ -39,7 +38,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	//   * the name of the blog owner (put this in the config table)
 	//   * RSS/Atom enabledness?
 	collector = append(collector, sthtml("My blog", true, false))
-	collector = append(collector, display_blogmain("My Blog Title", "My Name", "http://127.0.0.1/cat.jpg", nil, 40, false)) // FIXME
+	collector = append(collector, display_blogmain("My Blog Title", "My Name", "http://localhost/cats.jpg", nil, 40, false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
@@ -49,10 +48,10 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 		collector = append(collector, display_bnode(blogentry))
 	}
 	collector = append(collector, "</div><!-- entrypart -->\n")
-	collector = append(collector, "</div><!-- centrearea -->\n") // TODO: Make sure we're closing divs in the right order
+	collector = append(collector, "</div><!-- centrearea -->\n")
 	collector = append(collector, "<div id=\"footer\">\n")
 	collector = append(collector, "Site served by DWS\n")
-	collector = append(collector, "</div><!-- footer -->\n") // TODO: Make sure we're closing divs in the right order
+	collector = append(collector, "</div><!-- footer -->\n")
 	collector = append(collector, endhtml() ) // FIXME
 	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
 	resp := strings.Join(collector, "")
@@ -161,14 +160,20 @@ func dispatch_reviews_target(w http.ResponseWriter, r *http.Request) {
 	target := get_longname_for_target(dbh, target_safename)
 
 	collector = append(collector, sthtml("Review: " + target, true, false)) // todo: extend title to include target name
+	collector = append(collector, display_reviewmain())
+	collector = append(collector, "<div id=\"reviewpart\">\n")
 
 	reviewids := identify_all_reviews_for_target(dbh, target_safename)
 	for _, reviewid := range reviewids {
 		// XXX Right now we have title, zeit, body, and rating hooked up
 		review := get_review(dbh, reviewid)
-		collector = append(collector, "Title:" + review["title"] + "<br /><br />\n\n")
+		collector = append(collector, display_rnode(review))
 	}
-	// TODO: Put stuff here
+	collector = append(collector, "</div><!-- reviewpart -->\n")
+	collector = append(collector, "</div><!-- centrearea -->\n")
+	collector = append(collector, "<div id=\"footer\">\n")
+	collector = append(collector, "Site served by DWS\n")
+	collector = append(collector, "</div><!-- footer -->\n")
 	collector = append(collector, endhtml() )
 	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
 	resp := strings.Join(collector, "")

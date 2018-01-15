@@ -7,6 +7,10 @@ import (
 )
 
 // #############
+// bloghtml
+//
+// These are functions used to do layout for the blog portion of dws.
+//
 // These functions should not make database calls, and should just be simple
 // string manipulation (or at least restricted to looking up global settings in the config
 // table and URL-path stuff)
@@ -69,10 +73,10 @@ func display_blogmain(title string, owner string, blogimg string, topics []strin
 	collector = append(collector, "\t<div id=\"picarea\">\n")
 	collector = append(collector, "\t\t<img src=\"" + blogimg + "\" />\n")
 	collector = append(collector, "\t</div><!-- picarea -->\n")
-	collector = append(collector, "\t<div id=\"picareatext\">\n")
+	collector = append(collector, "\t<div id=\"topareatext\">\n")
 	collector = append(collector, "\t\t<h1>" + title + "</h1>\n")
-	collector = append(collector, "\t\t<h1>" + caption_extra + "</h1>")
-	collector = append(collector, "\t</div><!-- picareatext -->\n")
+	collector = append(collector, "\t\t" + caption_extra)
+	collector = append(collector, "\t</div><!-- topareatext -->\n")
 	collector = append(collector, "</div><!-- caption -->\n")
 	collector = append(collector, "</div><!-- toparea -->\n")
 

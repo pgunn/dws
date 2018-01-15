@@ -101,6 +101,12 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'entrypart',     'margin-right',          '12%');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'entrypart',     'float',                 'right');
 
+-- for now, entrypart mirrors reviewpart
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'reviewpart',    'E',                     '');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'reviewpart',    'width',                 '70%');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'reviewpart',    'margin-right',          '12%');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'reviewpart',    'float',                 'right');
+
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'menupart',      'E',                     '');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'menupart',      'float',                 'right');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'menupart',      'width',                 '15%');
@@ -116,13 +122,20 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'gmenu',         'margin-right',          '8px');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'gmenu',         'padding',               '8px');
 
--- No "E" for this?
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jehead',        'border',                '3px solid green');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jehead',        '-moz-border-radius',    '10px');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jehead',        '-webkit-border-radius', '10px');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jehead',        'border-radius',         '10px 10px');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jehead',        'padding',               '2px');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jehead',        'background',            'rgb(150,150,140)');
+
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revhead',       'border',                '3px solid green');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revhead',       '-moz-border-radius',    '10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revhead',       '-webkit-border-radius', '10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revhead',       'border-radius',         '10px 10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revhead',       'padding',               '2px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revhead',       'background',            'rgb(150,150,140)');
+
 
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'arentry',       'E',                     '');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'arentry',       'B',                     'left: 0;');
@@ -190,27 +203,39 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jentry',        'display',               'inline-block');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jentry',        'min-width',             '60%');
 
+-- for now, mirrors jentry
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      'E',                     '');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      'background',            'grey');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      'color',                 'black');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      '-moz-border-radius',    '10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      '-webkit-border-radius', '10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      'border-radius',         '10px 10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      'border',                '4px groove grey');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      'padding',               '4px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      'display',               'inline-block');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'reventry',      'min-width',             '60%');
+
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetimetext',    'margin-left',           '1em');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetimetext',    'margin-top',            '0.5em');
 
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetimedesc',    'float',                 'left');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetimedesc',    'min-height',            '2em');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetimedesc',    'height',                '100%');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetimedesc',    'min-width',             '20%');
+-- for now mirrors jetimetext
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revtimetext',   'margin-left',           '1em');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revtimetext',   'margin-top',            '0.5em');
 
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtime',    'border',                '1px solid darkgrey');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtime',    'height',                '38px');
 
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtimev',   'float',                 'left');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtimev',   'min-height',            '2em');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtimev',   'height',                '100%');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtimev',   'min-width',             '20%');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revheadtime',   'border',                '1px solid darkgrey');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revheadtime',   'height',                '38px');
 
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtimet',   'border-left',           '1px solid darkgrey');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtimet',   'float',                 'left');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtimet',   'height',                '100%');
 
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetailfield',   'border-left',           '2px solid rgb(170,170,170)');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revheadtimet',  'border-left',           '1px solid darkgrey');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revheadtimet',  'float',                 'left');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revheadtimet',  'height',                '100%');
+
 
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jbody',         'E',                     '');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jbody',         'background',            'lightgrey');
@@ -224,6 +249,19 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jbody',         'clear',                 'left');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jbody',         'margin-bottom',         '.3em');
 
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'E',                     '');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'background',            'lightgrey');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'color',                 'black');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'font-family',           'Monospace');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       '-moz-border-radius',    '10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       '-webkit-border-radius', '10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'border-radius',         '10px 10px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'border',                '2px solid white');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'padding',               '2px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'clear',                 'left');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revbody',       'margin-bottom',         '.3em');
+
+
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jemisc',        'border',                '1px solid lightgrey');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jemisc',        'margin-top',            '0px');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jemisc',        'height',                '1.4em');
@@ -235,6 +273,12 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetitle',       'margin',                '3px');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetitle',       'font-family',           'Serif');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jetitle',       'text-decoration',       'underline');
+
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revtitle',      'border',                '0px solid grey');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revtitle',      'margin',                '3px');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revtitle',      'font-family',           'Serif');
+INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revtitle',      'text-decoration',       'underline');
+
 
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'quoted',        'E',                     '');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'quoted',        'color',                 'green');
@@ -263,10 +307,6 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'ID',    'headermisc',    'Position',              'absolute');
 
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'privatetext',   'color',                 'red');
-
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'goodlink',      'color',                 'lightgreen');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'noexist',       'color',                 'red');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'namespace',     'color',                 'orange');
 
 -- POUND had two features we might eventually add back in:
 -- webpaths configured in the database, and uploading of files.
