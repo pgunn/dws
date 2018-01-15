@@ -11,7 +11,7 @@ import (
 func get_all_topics(dbh *sql.DB) map[string]string {
 	// Returns a hashmap of { review_topic_safename => review_topic_name }
 	// including all review topics
-	var ret map[string]string
+	var ret = make(map[string]string)
 
 	dbq, err := dbh.Query("SELECT safename, name FROM review_topic ORDER BY name")
 	if err != nil {
@@ -30,9 +30,9 @@ func get_all_topics(dbh *sql.DB) map[string]string {
 func get_all_targets_in_topic(dbh *sql.DB, topicsafename string) map [string]string {
 	// Returns a hashmap of { review_target_safename => review_target_name}
 	// for all review targets that are under the topicid
-	var ret map[string]string
+	var ret = make(map[string]string)
 
-	dbq, err := dbh.Query("SELECT name, safename FROM review_target WHERE topic IN (SELECT id FROM review_topic WHERE topic.safename=$1)", topicsafename)
+	dbq, err := dbh.Query("SELECT name, safename FROM review_target WHERE topic IN (SELECT id FROM review_topic WHERE safename=$1)", topicsafename)
 	if err != nil {
 		return ret
 	}
@@ -45,6 +45,19 @@ func get_all_targets_in_topic(dbh *sql.DB, topicsafename string) map [string]str
 	return ret
 }
 
+func get_longname_for_target(dbh *sql.DB, targetsafename string) string {
+	// TODO: Cleanup
+	dbq, err := dbh.Query("SELECT name FROM review_target WHERE safename=$1", targetsafename)
+	if err != nil {
+		return ""
+	}
+	for dbq.Next() {
+		var name string
+		dbq.Scan(&name)
+		return name
+	}
+	return ""
+}
 
 func identify_all_reviews_for_target(dbh *sql.DB, targetsafename string) []string {
 	// Return reviewids for all reviews with the given target
@@ -63,11 +76,11 @@ func identify_all_reviews_for_target(dbh *sql.DB, targetsafename string) []strin
 	return ret
 }
 
-func get_review(dbh *sql.DB, id int) map[string]string {
+func get_review(dbh *sql.DB, id string) map[string]string {
 	// Given an id in the review table, return everything about it
 	// needed to display it
 	// SELECT * FROM review WHERE id=$id
-	var ret map[string]string
+	var ret = make(map[string]string)
 
 	dbq, err := dbh.Query("SELECT title, zeit, body, rating FROM review WHERE id=$1", id)
 	if err != nil {

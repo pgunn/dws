@@ -38,7 +38,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	//   * the calculated number of archive pages
 	//   * the name of the blog owner (put this in the config table)
 	//   * RSS/Atom enabledness?
-	collector = append(collector, sthtml("My blog", true, false)) // FIXME
+	collector = append(collector, sthtml("My blog", true, false))
 	collector = append(collector, display_blogmain("My Blog Title", "My Name", "http://127.0.0.1/cat.jpg", nil, 40, false)) // FIXME
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
@@ -106,7 +106,20 @@ func dispatch_reviews_frontpage(w http.ResponseWriter, r *http.Request) {
 	// This page displays a list of links to review topics - the top level category
 	// under which particular reviews are categorised. Think stuff like
 	// "restaurants". It should say how many targets there are under each topic.
+	var dbh = db_connect()
+	var collector []string
 
+	collector = append(collector, sthtml("Reviews - Topics", true, false))
+	collector = append(collector, "<ul>Review Topics</ul>\n")
+	topics := get_all_topics(dbh)
+	for safename, name := range topics {
+		collector = append(collector, "\t<li><a href=\"/reviews/topic/" + safename + "\">" + name + "</a></li>\n")
+	}
+	collector = append(collector, "</ul>\n")
+	collector = append(collector, endhtml() )
+	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
+	resp := strings.Join(collector, "")
+	io.WriteString(w, resp)
 }
 
 func dispatch_reviews_topical(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +128,25 @@ func dispatch_reviews_topical(w http.ResponseWriter, r *http.Request) {
 	// The URL-pattern for these is /reviews/topic/$safename
 	// (safename is a normalised version of the name that must be composed of boring characters)
 	// It should say how many "thoughts" there are for each review target.
+	// links go to /reviews/on/$target
+	var dbh = db_connect()
+	var collector []string
 
+	topic_safename := r.URL.Path[len("/reviews/topic/"):] // chop off the leading path. TODO: Find a better way to parse paths
+	topics := get_all_topics(dbh)
+	topic := topics[topic_safename]
+
+	collector = append(collector, sthtml("Reviews - " + topic, true, false)) // todo: extend title to include topic name
+	collector = append(collector, "<ul>" + topic + " Reviews:</ul>\n")
+	targets := get_all_targets_in_topic(dbh, topic_safename)
+	for safename, name := range targets {
+		collector = append(collector, "\t<li><a href=\"/reviews/on/" + safename + "\">" + name + "</a></li>\n")
+	}
+	collector = append(collector, "</li>\n")
+	collector = append(collector, endhtml() )
+	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
+	resp := strings.Join(collector, "")
+	io.WriteString(w, resp)
 }
 
 func dispatch_reviews_target(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +154,25 @@ func dispatch_reviews_target(w http.ResponseWriter, r *http.Request) {
 	// It takes a parameter and thus needs to parse its URL further.
 	// The URL-pattern for these is /reviews/on/$safename
 	// (safename is a normalised version of the name that must be composed of boring characters)
+	var dbh = db_connect()
+	var collector []string
 
+	target_safename := r.URL.Path[len("/reviews/on/"):] // chop off the leading path. TODO: Find a better way to parse paths
+	target := get_longname_for_target(dbh, target_safename)
+
+	collector = append(collector, sthtml("Review: " + target, true, false)) // todo: extend title to include target name
+
+	reviewids := identify_all_reviews_for_target(dbh, target_safename)
+	for _, reviewid := range reviewids {
+		// XXX Right now we have title, zeit, body, and rating hooked up
+		review := get_review(dbh, reviewid)
+		collector = append(collector, "Title:" + review["title"] + "<br /><br />\n\n")
+	}
+	// TODO: Put stuff here
+	collector = append(collector, endhtml() )
+	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
+	resp := strings.Join(collector, "")
+	io.WriteString(w, resp)
 }
 
 func getenv_with_default(key, fallback string) string {
