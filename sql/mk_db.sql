@@ -56,7 +56,7 @@ CREATE TABLE config
 	id SERIAL PRIMARY KEY NOT NULL,
 	name TEXT UNIQUE NOT NULL,
 	value TEXT,
-	avalues VARCHAR(10),
+	avalues VARCHAR(10), -- allowable values, a type and possibly a range.
 	description TEXT
 	);
 
@@ -86,6 +86,13 @@ INSERT INTO config(name, value, avalues, description) VALUES ('entries_per_archp
 
 INSERT INTO config(name, value, avalues, description) VALUES ('blogstatic', 'http://localhost', 't[URL]', 'Base URL (includes http part) for the server');
 INSERT INTO config(name, value, avalues, description) VALUES ('main_blogname', 'dachte', 't', 'Shortname of the "main" blog (if any)');
+
+-- These are paths internal to the app
+INSERT INTO config(name, value, avalues, description) VALUES('path_blogmain',		'/blog/',		't', 'Path to the main blog page');
+INSERT INTO config(name, value, avalues, description) VALUES('path_reviewsmain',	'/reviews/',		't', 'Path to the main reviews page');
+INSERT INTO config(name, value, avalues, description) VALUES('path_reviewstopic',	'/reviews/topic/',	't', 'Path to a review topic');
+INSERT INTO config(name, value, avalues, description) VALUES('path_reviewstarget',	'/reviews/on/',		't', 'Path to a review target');
+INSERT INTO config(name, value, avalues, description) VALUES('path_cssmain',		'/site.css',		't', 'Path to the CSS');
 
 -- We should store CSS in the database. Here are two themes from my previous blogging software.
 INSERT INTO theme(name, description) VALUES('BaseTheme',   'All other themes use this as a basis');

@@ -37,3 +37,16 @@ func sthtml(title string, public bool, do_feeds bool) string {
 func endhtml() string {
 	return "</body></html>"
 }
+
+func get_htlink(target string, content string, follow_ok bool) string {
+	// Generic html link making
+	var collector []string
+
+	collector = append(collector, "<a href=\"" + target + "\"")
+	if ! follow_ok {
+		collector = append(collector, " rel=\"nofollow\"")
+	}
+	collector = append(collector, ">" + content + "</a>")
+	var ret = strings.Join(collector, "")
+	return ret
+}

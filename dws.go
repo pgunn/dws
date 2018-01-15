@@ -13,12 +13,13 @@ import (
 // and are executed by the webserver functions
 
 func dispatch_root(w http.ResponseWriter, r *http.Request) {
+	var dbh = db_connect()
 	var collector []string
 	collector = append(collector, sthtml("Main page", true, false))
 	collector = append(collector, "<ul>\n")
-	collector = append(collector, "\t<li><a href=\"blog/\">Blog</a></li>\n")
-	collector = append(collector, "\t<li><a href=\"reviews/\">Reviews</a></li>\n")
-	collector = append(collector, "\t<li><a href=\"/site.css\">CSS</a></li>\n")
+	collector = append(collector, "\t<li>" +  get_htlink(get_dispatch_path(dbh, "blogmain"),    "Blog",    true) + "</li>\n")
+	collector = append(collector, "\t<li>" +  get_htlink(get_dispatch_path(dbh, "reviewsmain"), "Reviews", true) + "</li>\n")
+	collector = append(collector, "\t<li>" +  get_htlink(get_dispatch_path(dbh, "cssmain"),     "CSS",     true) + "</li>\n")
 	collector = append(collector, "</ul>\n")
 	collector = append(collector, endhtml() )
 	resp := strings.Join(collector, "")
@@ -112,7 +113,7 @@ func dispatch_reviews_frontpage(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "<ul>Review Topics</ul>\n")
 	topics := get_all_topics(dbh)
 	for safename, name := range topics {
-		collector = append(collector, "\t<li><a href=\"/reviews/topic/" + safename + "\">" + name + "</a></li>\n")
+		collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "reviewstopic") + safename, name, true) + "</li>\n")
 	}
 	collector = append(collector, "</ul>\n")
 	collector = append(collector, endhtml() )
@@ -131,7 +132,7 @@ func dispatch_reviews_topical(w http.ResponseWriter, r *http.Request) {
 	var dbh = db_connect()
 	var collector []string
 
-	topic_safename := r.URL.Path[len("/reviews/topic/"):] // chop off the leading path. TODO: Find a better way to parse paths
+	topic_safename := r.URL.Path[len(get_dispatch_path(dbh, "reviewstopic")):] // chop off the leading path.
 	topics := get_all_topics(dbh)
 	topic := topics[topic_safename]
 
@@ -139,7 +140,7 @@ func dispatch_reviews_topical(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "<ul>" + topic + " Reviews:</ul>\n")
 	targets := get_all_targets_in_topic(dbh, topic_safename)
 	for safename, name := range targets {
-		collector = append(collector, "\t<li><a href=\"/reviews/on/" + safename + "\">" + name + "</a></li>\n")
+		collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "reviewstarget") + safename, name, true) + "</li>\n")
 	}
 	collector = append(collector, "</li>\n")
 	collector = append(collector, endhtml() )
@@ -156,7 +157,7 @@ func dispatch_reviews_target(w http.ResponseWriter, r *http.Request) {
 	var dbh = db_connect()
 	var collector []string
 
-	target_safename := r.URL.Path[len("/reviews/on/"):] // chop off the leading path. TODO: Find a better way to parse paths
+	target_safename := r.URL.Path[len(get_dispatch_path(dbh, "reviewstarget")):] // chop off the leading path
 	target := get_longname_for_target(dbh, target_safename)
 
 	collector = append(collector, sthtml("Review: " + target, true, false)) // todo: extend title to include target name
@@ -191,12 +192,14 @@ func getenv_with_default(key, fallback string) string {
 
 // Finally our main function
 func main() {
+	var dbh = db_connect()
+	print("CSS is at " + get_dispatch_path(dbh, "cssmain") + "\n")
 	port := getenv_with_default("DWS_PORT", "8000")
 	http.HandleFunc("/",			dispatch_root)
-	http.HandleFunc("/blog/",		dispatch_blog_htmlview)
-	http.HandleFunc("/reviews/",		dispatch_reviews_frontpage)
-	http.HandleFunc("/reviews/topic/",	dispatch_reviews_topical)
-	http.HandleFunc("/reviews/on/",		dispatch_reviews_target)
-	http.HandleFunc("/site.css",		dispatch_css)
+	http.HandleFunc(get_dispatch_path(dbh, "blogmain"),	dispatch_blog_htmlview)
+	http.HandleFunc(get_dispatch_path(dbh, "reviewsmain"),	dispatch_reviews_frontpage)
+	http.HandleFunc(get_dispatch_path(dbh, "reviewstopic"),	dispatch_reviews_topical)
+	http.HandleFunc(get_dispatch_path(dbh, "reviewstarget"),dispatch_reviews_target)
+	http.HandleFunc(get_dispatch_path(dbh, "cssmain"),	dispatch_css)
 	http.ListenAndServe(":" + port, nil)
 }

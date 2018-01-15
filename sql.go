@@ -9,7 +9,7 @@ import (
 
 // sql
 //
-// This package holds generic sql operations
+// This holds generic sql operations
 
 func db_connect() *sql.DB {
 	// Connect to DB, return database handle
@@ -35,5 +35,14 @@ func get_config_value(dbh *sql.DB, key string) string {
 		dbq.Scan(&ret)
 	}
 	return ret
+}
+
+func get_dispatch_path(dbh *sql.DB, feature string) string {
+	// convenience wrapper around get_config_value that reasons about
+	// paths to various dispatch paths. Later extend this to add a
+	// base prefix. Maybe do some error handling too.
+	// XXX: Any failures here should abort a request, not kill the server.
+	path := get_config_value(dbh, "path_" + feature)
+	return path
 }
 
