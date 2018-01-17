@@ -58,6 +58,27 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, resp)
 }
 
+func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
+	var dbh = db_connect()
+	var collector []string
+
+	tag_safename := r.URL.Path[len(get_dispatch_path(dbh, "blogtag")):] // chop off the leading path.
+	if len(tag_safename) < 1 {
+		collector = append(collector, sthtml("Blog Tags", true, false))
+		// No tag part, so just do a frontpage
+	} else {
+		longname := get_longname_for_safe_tag(dbh, tag_safename)
+		collector = append(collector, sthtml("Blog Tag - " + longname, true, false))
+	}
+	// TODO
+
+	collector = append(collector, endhtml() ) // FIXME
+	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
+	resp := strings.Join(collector, "")
+	io.WriteString(w, resp)
+
+}
+
 func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
 	// Saving this because it's a good template for other views of the blog data
 	var dbh = db_connect()
@@ -196,6 +217,7 @@ func main() {
 	port := getenv_with_default("DWS_PORT", "8000")
 	http.HandleFunc("/",			dispatch_root)
 	http.HandleFunc(get_dispatch_path(dbh, "blogmain"),	dispatch_blog_htmlview)
+	http.HandleFunc(get_dispatch_path(dbh, "blogtag"),	dispatch_blog_tagpage)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewsmain"),	dispatch_reviews_frontpage)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstopic"),	dispatch_reviews_topical)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstarget"),dispatch_reviews_target)

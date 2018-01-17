@@ -57,9 +57,15 @@ func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) [
 	return ret
 }
 
-func tagid_for_tag(tag string) {
+func get_longname_for_safe_tag(dbh *sql.DB, safename string) string {
 	// Returns id for named tag
 	// SELECT id FROM tag WHERE tagname=$tag
+	dbq, _ := dbh.Query("SELECT name FROM tag WHERE safename=$1", safename)
+	var name = ""
+	for dbq.Next() {
+		dbq.Scan(&name)
+	}
+	return name
 }
 
 func identify_blogentries_with_tag(tagid int) {
