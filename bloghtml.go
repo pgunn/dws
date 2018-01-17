@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"strconv"
 	"strings"
 	"time"
@@ -16,21 +17,30 @@ import (
 // table and URL-path stuff)
 // TODO: Consider renaming these
 
-func draw_bnode(bentrydata map[string]string, content string) string {
+func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags map[string]string) string {
 	// We'll have to extend the signature for both topics and the footer section
 	var collector []string
 
 	collector = append(collector, "<div class=\"jentry\">\n")
 	collector = append(collector, "\t<div class=\"jehead\">\n")
-	collector = append(collector, "\t<div class=\"jetitle\">" + bentrydata["title"] + "</div>\n")
+	collector = append(collector, "\t<div class=\"jetitle\">Title: " + bentrydata["title"] + "</div>\n")
 	// Time
 	var zeit_int, _ = strconv.ParseInt(bentrydata["zeit"], 10, 64) // base 10, 64-bit output
 	var timestring = time.Unix(zeit_int, 0).Format(time.RFC3339)
 	collector = append(collector, "\t<div class=\"jeheadtime\">")
 	collector = append(collector, "<div class=\"jeheadtimet\">") // I don't remember why we had two divs here
-	collector = append(collector, "<div class=\"jeheadtimetext\">" + timestring + "</div>")
+	collector = append(collector, "<div class=\"jeheadtimetext\">Date: " + timestring + "</div>\n")
 	collector = append(collector, "</div><!-- jeheadtimet -->")
 	collector = append(collector, "</div><!-- jeheadtime -->")
+
+	if len(tags) > 0 {
+		collector = append(collector, "\t<div class=\"jetagarea\">\n")
+		collector = append(collector, "Tags: ")
+		for safetag, tag := range tags {
+			collector = append(collector, " " + get_htlink(get_dispatch_path(dbh, "blogtag") + safetag, tag, false))
+		}
+		collector = append(collector, "\t</div><!-- tagarea -->\n")
+	}
 	// TODO Code for jemisc, the extensible area for extra tabular data like music
 	collector = append(collector, "</div><!-- jehead -->\n")
 	collector = append(collector, "\t<div class=\"jbody\">\n")
@@ -45,7 +55,7 @@ func draw_bnode(bentrydata map[string]string, content string) string {
 	return ret
 }
 
-func display_bnode(bentrydata map[string]string) string {
+func display_bnode(dbh *sql.DB, bentrydata map[string]string, tags map[string]string) string {
 	// Return HTML for a single blog entry. Called both for single-entry view
 	// as well as showing a bunch on a page. This code is a lot less abstract than
 	// the equivalent POUND code, since this blog engine doesn't do nearly as much.
@@ -58,7 +68,7 @@ func display_bnode(bentrydata map[string]string) string {
 
 	// Render the markup language.
 	var content = do_markup(bentrydata["body"], "blogentryv1")
-	var ret = draw_bnode(bentrydata, content)
+	var ret = draw_bnode(dbh, bentrydata, content, tags)
 	// draw_bnode() consumed the output of that and actually spat out the code.
 	// in draw_bnode()
 	return ret

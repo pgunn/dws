@@ -2,8 +2,14 @@
 -- software to function.
 
 -- Sample blogentry content
-INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1414343745, 'forcedtext', 'This article is about cats', 'I really like cats. I have often had them as pets', 'TMBG - Snail Shell');
+INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1414343745, 'forcedtext', 'This article is about cats',  'I really like cats. I have often had them as pets', 'TMBG - Snail Shell');
 INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1514343745, 'forcedtext', 'This article is about blogs', 'I sometimes write blog software', 'Death Cab for Cutie - Good Help');
+INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1514343770, 'forcedtext', 'This article is about cars',  'I do not have a car', 'Firewater - Psychoparmacology');
+
+INSERT INTO tag(name, safename, descrip) VALUES('Pets', 'pets', 'When I talk about pets');
+INSERT INTO tag(name, safename, descrip) VALUES('Allergies', 'sniffle', 'I sometimes am ill');
+
+INSERT INTO blogentry_tags(beid, tagid) VALUES( (SELECT id FROM blogentry WHERE title='This article is about cats'), (SELECT id FROM tag WHERE name='Pets'));
 
 -- Sample review content
 

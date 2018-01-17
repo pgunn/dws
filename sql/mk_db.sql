@@ -8,14 +8,15 @@ CREATE TABLE blogentry
 	title TEXT,
 	body TEXT,
 	music TEXT, -- I like to say what music I'm listening to
-	private BOOLEAN DEFAULT(FALSE)
+	private BOOLEAN DEFAULT FALSE
 	);
 
 CREATE TABLE tag
 	(
 	id SERIAL PRIMARY KEY NOT NULL,
-	descrip TEXT, -- Not sure if we'll use this
-	tagname TEXT UNIQUE NOT NULL
+	name TEXT UNIQUE NOT NULL,
+	safename TEXT UNIQUE NOT NULL,
+	descrip TEXT -- Not sure if we'll use this
 	);
 
 CREATE TABLE blogentry_tags

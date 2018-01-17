@@ -43,10 +43,9 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
-		// display_bnode()
 		entryid_i , _ := strconv.Atoi(entryid) // XXX Consider having last_ten_entries be []integer
-		var blogentry = get_blogentry(dbh, entryid_i )
-		collector = append(collector, display_bnode(blogentry))
+		var blogentry, tags = get_blogentry(dbh, entryid_i )
+		collector = append(collector, display_bnode(dbh, blogentry, tags))
 	}
 	collector = append(collector, "</div><!-- entrypart -->\n")
 	collector = append(collector, "</div><!-- centrearea -->\n")
@@ -66,7 +65,7 @@ func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
 		entryid_i , _ := strconv.Atoi(entryid) // XXX Consider having last_ten_entries be []integer
-		var blogentry = get_blogentry(dbh, entryid_i )
+		var blogentry, _ = get_blogentry(dbh, entryid_i )
 		resp += "Begin blogentry\n"
 		resp += "Title: " + blogentry["title"] + "\n"
 		resp += "Posted: " + blogentry["zeit"] + "\n"

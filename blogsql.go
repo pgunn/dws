@@ -3,12 +3,11 @@ package main
 import (
 	"database/sql"
 	"log"
-	"strconv"
 )
 
 
 // Blog stuff
-func get_blogentry(dbh *sql.DB, id int) map[string]string {
+func get_blogentry(dbh *sql.DB, id int) (map[string]string, map[string]string) {
 	// Given an id in the blogentry table, return everything
 	// about it needed to display it, including tags.
 	// SELECT * FROM blogentry WHERE id=$id
@@ -17,15 +16,9 @@ func get_blogentry(dbh *sql.DB, id int) map[string]string {
 	//	SELECT tagid FROM blogentry_tags WHERE beid=$id)
 	// TODO: Actually do the tags part
 	var mymap = make(map[string]string)
+	var tags = make(map[string]string)
 
-	dbq, err := dbh.Query("SELECT title, zeit, body FROM blogentry WHERE id=$1", id)
-	if err != nil {
-		mymap["title"] = "Fake title for blogentry " + strconv.Itoa(id)
-		mymap["zeit"] = "1514238175"
-		mymap["body"] = "Fake blogentry body"
-		log.Print(err)
-		return mymap
-	}
+	dbq, _ := dbh.Query("SELECT title, zeit, body FROM blogentry WHERE id=$1", id)
 	for dbq.Next() {
 		var title, zeit, body string
 		dbq.Scan(&title, &zeit, &body)
@@ -33,7 +26,13 @@ func get_blogentry(dbh *sql.DB, id int) map[string]string {
 		mymap["zeit"] = zeit
 		mymap["body"] = body
 	}
-	return mymap
+	dbq, _ = dbh.Query("SELECT name, safename FROM tag WHERE id IN (SELECT tagid FROM blogentry_tags WHERE beid=$1)", id)
+	for dbq.Next() {
+		var tagname, safetagname string
+		dbq.Scan(&tagname, &safetagname)
+		tags[safetagname] = tagname
+	}
+	return mymap, tags
 }
 
 func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) []string {
