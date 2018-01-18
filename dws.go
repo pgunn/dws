@@ -56,6 +56,34 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, resp)
 }
 
+func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
+	// We have a path (configured as a config entry named path_blogentry) but past that I want the public name of entries
+	// in that virtual path to look like entry1388938708.html
+	// so we're going to need to do a bit of string parsing to get the numeric part out.
+	// TODO: Need to verify safety of the manipulation we're doing
+	var dbh = db_connect()
+	var collector []string
+
+	blog_entryzeit_with_suffix := r.URL.Path[len(get_dispatch_path(dbh, "blogentry") + "entry"):]
+	blog_entryzeit := strings.TrimSuffix(blog_entryzeit_with_suffix, ".html")
+	beid := get_beid_by_zeit(dbh, blog_entryzeit) // TODO: Error handling if the zeit does not exist
+	var blogentry, tags = get_blogentry(dbh, beid)
+
+	collector = append(collector, sthtml("Blog: " + blogentry["title"], true, false))
+	collector = append(collector, display_blogmain("Blog: " + blogentry["title"], "My Name", "http://localhost/cats.jpg", nil, 40, false)) // Retrieve URL from database, document image size
+	collector = append(collector, "<div id=\"entrypart\">\n")
+	collector = append(collector, display_bnode(dbh, blogentry, tags))
+	collector = append(collector, "</div><!-- entrypart -->\n")
+	collector = append(collector, "</div><!-- centrearea -->\n")
+	collector = append(collector, "<div id=\"footer\">\n")
+	collector = append(collector, "Site served by DWS\n")
+	collector = append(collector, "</div><!-- footer -->\n")
+	collector = append(collector, endhtml())
+	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
+	resp := strings.Join(collector, "")
+	io.WriteString(w, resp)
+}
+
 func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 	var dbh = db_connect()
 	var collector []string
@@ -70,7 +98,7 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 			collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "blogtag") + tagsafename, tagname, false) + "</li>\n") // TODO: Make this a link
 		}
 		collector = append(collector, "</ul>\n")
-	} else {
+	} else { // TODO: This page is ugly. Fix that.
 		longname := get_longname_for_safe_tag(dbh, tag_safename)
 		tag_description := get_tag_description(dbh, tag_safename)
 		bentries := identify_blogentries_with_tag(dbh, tag_safename)
@@ -81,7 +109,7 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 		collector = append(collector, "<ul>Entries\n")
 		for _, beid := range bentries {
 			bentry, _ := get_blogentry(dbh, beid)
-			collector = append(collector, "<li>" + bentry["zeit"] + ": " + bentry["title"] + "</li>\n") // TODO: When we support individual entry pages, make this a link
+			collector = append(collector, "<li>" + get_htlink(path_to_blogentry(dbh, bentry["zeit"]), bentry["zeit"], true) + ": " + bentry["title"] + "</li>\n")
 		}
 		collector = append(collector, "</ul>\n")
 	}
@@ -89,7 +117,6 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
 	resp := strings.Join(collector, "")
 	io.WriteString(w, resp)
-
 }
 
 func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
@@ -229,6 +256,7 @@ func main() {
 	port := getenv_with_default("DWS_PORT", "8000")
 	http.HandleFunc("/",			dispatch_root)
 	http.HandleFunc(get_dispatch_path(dbh, "blogmain"),	dispatch_blog_htmlview)
+	http.HandleFunc(get_dispatch_path(dbh, "blogentry"),	dispatch_blog_entry)
 	http.HandleFunc(get_dispatch_path(dbh, "blogtag"),	dispatch_blog_tagpage)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewsmain"),	dispatch_reviews_frontpage)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstopic"),	dispatch_reviews_topical)

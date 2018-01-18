@@ -29,6 +29,15 @@ func get_blogentry(dbh *sql.DB, id string) (map[string]string, map[string]string
 	return mymap, tags
 }
 
+func get_beid_by_zeit(dbh *sql.DB, zeit string) string {
+	dbq, _ := dbh.Query("SELECT id FROM blogentry where zeit=$1", zeit)
+	var beid = ""
+	for dbq.Next() {
+		dbq.Scan(&beid)
+	}
+	return beid
+}
+
 func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) []string {
 	// Returns blogentry(id) for the last up-to-$count blogentries
 	// NOTE: It can return fewer than requested if there are not that many.
