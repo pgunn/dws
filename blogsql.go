@@ -7,7 +7,7 @@ import (
 
 
 // Blog stuff
-func get_blogentry(dbh *sql.DB, id int) (map[string]string, map[string]string) {
+func get_blogentry(dbh *sql.DB, id string) (map[string]string, map[string]string) {
 	// Given an id in the blogentry table, return everything
 	// about it needed to display it, including tags.
 	// SELECT * FROM blogentry WHERE id=$id
@@ -42,6 +42,7 @@ func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) [
 	// SELECT id FROM blogentry WHERE hidden=$include_private
 	// 	ORDER BY zeit DESC LIMIT $count
 	var ret []string
+
 	dbq, err := dbh.Query("SELECT id FROM blogentry WHERE private=$1 ORDER BY zeit LIMIT $2", include_private, count)
 	if err != nil {
 		ret = append(ret, "1")
@@ -57,21 +58,57 @@ func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) [
 	return ret
 }
 
+func get_all_tags(dbh *sql.DB, include_empty bool) map[string]string {
+	var ret = make(map[string]string)
+	var dbq *sql.Rows
+
+	if include_empty {
+		dbq, _ = dbh.Query("SELECT name, safename FROM tag")
+	} else {
+		dbq, _ = dbh.Query("SELECT name, safename FROM tag WHERE id IN (SELECT tagid FROM blogentry_tags)")
+	}
+	for dbq.Next() {
+		var name, safename string
+		dbq.Scan(&name, &safename)
+		ret[safename] = name
+	}
+	return ret
+}
+
 func get_longname_for_safe_tag(dbh *sql.DB, safename string) string {
 	// Returns id for named tag
 	// SELECT id FROM tag WHERE tagname=$tag
-	dbq, _ := dbh.Query("SELECT name FROM tag WHERE safename=$1", safename)
 	var name = ""
+
+	dbq, _ := dbh.Query("SELECT name FROM tag WHERE safename=$1", safename)
 	for dbq.Next() {
 		dbq.Scan(&name)
 	}
 	return name
 }
 
-func identify_blogentries_with_tag(tagid int) {
+func get_tag_description(dbh *sql.DB, safename string) string {
+	var descrip = "No description yet"
+
+	dbq, _ := dbh.Query("SELECT descrip FROM tag WHERE safename=$1", safename)
+	for dbq.Next() {
+		dbq.Scan(&descrip)
+	}
+	return descrip
+
+}
+
+func identify_blogentries_with_tag(dbh *sql.DB, safename string) []string {
 	// Returns blogentry(id) for all blogentries that have the
 	// given tag
-	// SELECT id FROM blogentry WHERE id IN (
-	//	SELECT beid FROM blogentry_tags WHERE tagid=$tagid)
+	var ret []string
+
+	dbq, _ := dbh.Query("SELECT id FROM blogentry WHERE id IN (SELECT beid FROM blogentry_tags WHERE tagid=(SELECT id FROM tag WHERE safename=$1))", safename)
+	for dbq.Next() {
+		var beid string
+		dbq.Scan(&beid)
+		ret = append(ret, beid)
+	}
+return ret
 }
 

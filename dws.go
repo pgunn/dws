@@ -4,7 +4,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -43,8 +42,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
-		entryid_i , _ := strconv.Atoi(entryid) // XXX Consider having last_ten_entries be []integer
-		var blogentry, tags = get_blogentry(dbh, entryid_i )
+		var blogentry, tags = get_blogentry(dbh, entryid)
 		collector = append(collector, display_bnode(dbh, blogentry, tags))
 	}
 	collector = append(collector, "</div><!-- entrypart -->\n")
@@ -65,14 +63,29 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 	tag_safename := r.URL.Path[len(get_dispatch_path(dbh, "blogtag")):] // chop off the leading path.
 	if len(tag_safename) < 1 {
 		collector = append(collector, sthtml("Blog Tags", true, false))
-		// No tag part, so just do a frontpage
+		tags := get_all_tags(dbh, false)
+		collector = append(collector, "<h1>All Tags</h1><br />\n")
+		collector = append(collector, "<ul>\n")
+		for tagsafename, tagname := range tags {
+			collector = append(collector, "\t<li>" + tagname + ":" + tagsafename + "</li>\n") // TODO: Make this a link
+		}
+		collector = append(collector, "</ul>\n")
 	} else {
 		longname := get_longname_for_safe_tag(dbh, tag_safename)
-		collector = append(collector, sthtml("Blog Tag - " + longname, true, false))
-	}
-	// TODO
+		tag_description := get_tag_description(dbh, tag_safename)
+		bentries := identify_blogentries_with_tag(dbh, tag_safename)
 
-	collector = append(collector, endhtml() ) // FIXME
+		collector = append(collector, sthtml("Blog Tag - " + longname, true, false))
+		collector = append(collector, "<h1>" + longname + "</h1><br />\n")
+		collector = append(collector, tag_description + "<br />\n")
+		collector = append(collector, "<ul>Entries\n")
+		for _, beid := range bentries {
+			bentry, _ := get_blogentry(dbh, beid)
+			collector = append(collector, "<li>" + bentry["zeit"] + ": " + bentry["title"] + "</li>\n") // TODO: When we support individual entry pages, make this a link
+		}
+		collector = append(collector, "</ul>\n")
+	}
+	collector = append(collector, endhtml() )
 	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
 	resp := strings.Join(collector, "")
 	io.WriteString(w, resp)
@@ -85,8 +98,7 @@ func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
 	var resp = ""
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
-		entryid_i , _ := strconv.Atoi(entryid) // XXX Consider having last_ten_entries be []integer
-		var blogentry, _ = get_blogentry(dbh, entryid_i )
+		var blogentry, _ = get_blogentry(dbh, entryid)
 		resp += "Begin blogentry\n"
 		resp += "Title: " + blogentry["title"] + "\n"
 		resp += "Posted: " + blogentry["zeit"] + "\n"
