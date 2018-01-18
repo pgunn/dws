@@ -3,7 +3,7 @@
 CREATE TABLE blogentry
 	(
 	id SERIAL PRIMARY KEY NOT NULL,
-	zeit BIGINT NOT NULL, -- External epochtime timestamp
+	zeit BIGINT UNIQUE NOT NULL, -- External epochtime timestamp
 	format TEXT, -- this is a string describing a rendering policy
 	title TEXT,
 	body TEXT,
