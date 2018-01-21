@@ -67,7 +67,7 @@ func display_bnode(dbh *sql.DB, bentrydata map[string]string, tags map[string]st
 	// TODO: Footer section (also passed to bnode) with a link to just this entry
 
 	// Render the markup language.
-	var content = do_markup(bentrydata["body"], "blogentryv1")
+	var content, _ = do_markup(bentrydata["body"], "blogentryv1")
 	var ret = draw_bnode(dbh, bentrydata, content, tags)
 	// draw_bnode() consumed the output of that and actually spat out the code.
 	// in draw_bnode()
