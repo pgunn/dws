@@ -6,6 +6,7 @@ INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1414343745, 'forc
 INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1514343745, 'forcedtext', 'This article is about blogs', 'I sometimes write blog software', 'Death Cab for Cutie - Good Help');
 INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1514343770, 'forcedtext', 'This article is about cars',  'I do not have a car', 'Firewater - Psychoparmacology');
 INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1516515509, 'forcedtext', 'This article has markup',  '''''Thoughts'''' [http://foo.com|foo]', 'Flogging Molly - Lightning Storm');
+INSERT INTO blogentry(zeit, format, title, body, music) VALUES(1516515709, 'forcedtext', 'This article has lists',  'We like lists here'||E'\n'||'*One'||E'\n'||'*Two'||E'\n'||'*Three', 'Plaid Tongued Devils - I think I''m a Wolf');
 
 INSERT INTO tag(name, safename, descrip) VALUES('Pets', 'pets', 'When I talk about pets');
 INSERT INTO tag(name, safename, descrip) VALUES('Allergies', 'sniffle', 'I sometimes am ill');
