@@ -329,3 +329,4 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 -- do things that write to the database.
 
 GRANT ALL ON ALL TABLES IN SCHEMA public TO pound;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO pound;

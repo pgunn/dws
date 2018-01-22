@@ -24,7 +24,7 @@ if($cmd =~ /^post$/i)
 elsif($cmd =~ /^list$/i)
 	{do_list($dbh);}
 elsif($cmd =~ /^topic$/i)
-	{do_topic(@args);}
+	{do_topic($dbh, @args);}
 elsif($cmd =~ /^config$/i)
 	{do_config($dbh, @args);}
 else
@@ -69,10 +69,9 @@ DWSDC - The DWS client
 
 Commands:
 	post \$msgid - Posts or updates that entry with provided file
-	get  \$msgid - Retrieves that entry to a file
 	list - Displays list of all entries
-	stat \$msgid - Displays all info on the provided entryid
-	topic \$topicname \$description [\$imgurl\] - Sets info on a topic
+	topic \$topicname \$topicsafename \$description - Create or update description on a topic
+	config \$key \$value - Updates an already-defined key-value in the config
 
 EOHELP
 exit;
@@ -91,18 +90,20 @@ exit;
 
 sub do_topic($$$$$;)
 {
-my ($blog, $tname, $desc, $imgurl) = @_;
+my ($dbh, $tname, $safename, $desc) = @_;
 # later do sanity checks on topic names to ban spaces and the like
-my $blogid = blogid_for_blogname(blogname => $blog);
-if(topic_exists(blogid => $blogid, topicname => $tname))
+if(topic_exists($dbh, $tname))
 	{
-	clean_topic(blogid => $blogid, topicname => $tname);
+	update_topic($dbh, $tname, $desc);
+	}
+elsif(topic_safename_exists($dbh, $safename))
+	{
+	die "The safename of [$safename] is already taken\n";
 	}
 else
 	{
-	new_topic(blogid => $blogid, topicname => $tname);
+	setup_topic($dbh, $tname, $safename, $desc);
 	}
-setup_topic(blogid => $blogid, topicname => $tname, description => $desc, image_url => $imgurl);
 }
 
 sub do_post
@@ -189,6 +190,36 @@ my $equery = $dbh->prepare("SELECT id from tag WHERE name=?");
 $equery->execute($topic);
 my $foo = $equery->fetchall_arrayref();
 return defined($$foo[0][0]); # There is probably a better way to write this
+}
+
+sub topic_safename_exists
+{
+my ($dbh, $topic_safe) = @_;
+
+my $equery = $dbh->prepare("SELECT id from tag WHERE safename=?");
+$equery->execute($topic_safe);
+my $foo = $equery->fetchall_arrayref();
+return defined($$foo[0][0]); # There is probably a better way to write this
+}
+
+sub update_topic
+{
+# Right now this can only update the description of a topic
+my ($dbh, $name, $desc) = @_;
+
+print("Updating topic\n");
+my $tupquery = $dbh->prepare("UPDATE tag SET descrip=? WHERE name=?");
+$tupquery->execute($desc, $name);
+}
+
+sub setup_topic
+{
+# Make a new topic, after making sure name and safename are not yet taken
+my ($dbh, $name, $safename, $desc) = @_;
+
+print("Creating new topic\n");
+my $tupquery = $dbh->prepare("INSERT INTO tag(name, safename, descrip) VALUES(?, ?, ?)");
+$tupquery->execute($name, $safename, $desc);
 }
 
 ############################
