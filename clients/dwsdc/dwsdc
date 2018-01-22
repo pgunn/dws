@@ -1,0 +1,284 @@
+#!/usr/bin/perl -w
+
+use strict;
+use DBI;
+our $debug=1;
+my $version = "2.0";
+use Cwd;
+my @req_config = qw/user dbase pass modules/;
+my @opt_config = qw/blog/;
+
+main();
+
+####################################
+
+sub main
+{
+my ($cmd, @args) = handle_args();
+my %config = read_env();
+
+my $dbh = do_connect($config{dbase}, $config{user}, $config{pass});
+
+if($cmd =~ /^post$/i)
+	{do_post($dbh, @args)} # 1+ argument, the name of the file(s) to post
+elsif($cmd =~ /^list$/i)
+	{do_list($dbh);}
+elsif($cmd =~ /^topic$/i)
+	{do_topic(@args);}
+elsif($cmd =~ /^config$/i)
+	{do_config($dbh, @args);}
+else
+	 {$dbh->disconnect();die "unrecognized command\n";}
+$dbh->disconnect();
+exit;
+}
+
+sub do_connect
+{
+my ($dbase, $user, $pass) = @_;
+my $dbh = DBI->connect("dbi:Pg:dbname=$dbase;host=127.0.0.1", $user, $pass);
+if($dbh->ping)
+        {if($debug) {print "Connected\n";} }
+else
+        {die "Not connected: $!<BR>\n";}
+return $dbh;
+}
+
+sub do_config($$$)
+{ # FIXME Add ability to list config and add new config keys
+my ($dbh, $key, $val) = @_;
+my $cset = $dbh->prepare("UPDATE config SET value=? WHERE name=?");
+$cset->execute($val, $key);
+}
+
+sub handle_args
+{
+my @my_argv = @ARGV;
+if((@my_argv == 0) || ($my_argv[0] =~ /^-?-?h(:?elp)?$/) )
+	{do_help();}
+my $cmd = shift(@my_argv);
+if($cmd =~ /-?-?v(:?ersion)?/)
+	{do_version();}
+return ($cmd, @my_argv); # Remember, we shifted it.
+}
+
+sub do_help
+{
+print <<EOHELP;
+DWSDC - The DWS client
+
+Commands:
+	post \$msgid - Posts or updates that entry with provided file
+	get  \$msgid - Retrieves that entry to a file
+	list - Displays list of all entries
+	stat \$msgid - Displays all info on the provided entryid
+	topic \$topicname \$description [\$imgurl\] - Sets info on a topic
+
+EOHELP
+exit;
+}
+
+sub do_version
+{
+print <<EOV;
+dws version $version
+Part of the DWS blog/review software, written by Pat Gunn
+Available at https://github.com/pgunn/dws
+
+EOV
+exit;
+}
+
+sub do_topic($$$$$;)
+{
+my ($blog, $tname, $desc, $imgurl) = @_;
+# later do sanity checks on topic names to ban spaces and the like
+my $blogid = blogid_for_blogname(blogname => $blog);
+if(topic_exists(blogid => $blogid, topicname => $tname))
+	{
+	clean_topic(blogid => $blogid, topicname => $tname);
+	}
+else
+	{
+	new_topic(blogid => $blogid, topicname => $tname);
+	}
+setup_topic(blogid => $blogid, topicname => $tname, description => $desc, image_url => $imgurl);
+}
+
+sub do_post
+{
+my ($dbh, @fns) = @_;
+
+foreach my $fn (@fns)
+	{
+	print "Parse file $fn\n";
+	my $msgid = depath($fn);
+	my $entfile = readfile($fn);
+	my %attrs = parse_post_attribs($entfile);
+	print "File loaded, preparing to post..\n";
+	if(msgid_exists($dbh, $msgid))
+		{ # Make existing entry into a stub, clear all topics/etc
+		print "Post exists, purging for repost..\n";
+		erase_blogentry($dbh, $msgid);
+		}
+	print "Making post..\n";
+	blog_post($dbh, $msgid, $entfile, \%attrs);
+	}
+}
+
+sub do_list($)
+{
+my ($dbh) = @_;
+
+my $lquery = $dbh->prepare("SELECT id, zeit, title FROM blogentry ORDER BY zeit DESC");
+$lquery->execute();
+while(my $result = $lquery->fetchrow_hashref() )
+	{
+	print join(" ", $$result{id}, $$result{zeit}, $$result{title}) . "\n"
+	}
+}
+
+############################
+# DB Helpers
+
+sub msgid_exists($$;)
+{
+my ($dbh, $zeit) = @_;
+
+my $equery = $dbh->prepare("SELECT id from blogentry WHERE zeit=?");
+$equery->execute($zeit);
+my $foo = $equery->fetchall_arrayref();
+return defined($$foo[0][0]); # There is probably a better way to write this
+}
+
+sub erase_blogentry
+{
+my ($dbh, $zeit) = @_;
+
+$dbh->do("DELETE FROM blogentry_tags WHERE beid=(SELECT id FROM blogentry WHERE zeit=?)", $zeit);
+$dbh->do("DELETE FROM blogentry WHERE zeit=?", $zeit);
+}
+
+sub blog_post
+{
+my ($dbh, $zeit, $contents, $attref) = @_;
+
+my $poster = $dbh->prepare("INSERT INTO blogentry(zeit, title, body, music, private) VALUES(?, ?, ?, ?, ?)");
+$poster->execute($zeit, $$attref{title}, $contents, $$attref{misc}{music}, $$attref{private} ? "true" : "false");
+
+my $topicer = $dbh->prepare("INSERT INTO blogentry_tags(beid, tagid) VALUES((SELECT id FROM blogentry WHERE zeit=?), (SELECT id FROM tag WHERE name=?) )");
+foreach my $topic (keys %{$$attref{topic}})
+	{
+	print "\tPost has topic [$topic]\n";
+	if(topic_exists($dbh, $topic))
+		{
+		$topicer->execute($zeit, $topic);
+		}
+	else
+		{
+		warn "Ignoring nonexistent topic [$topic]\n";
+		}
+	}
+}
+
+sub topic_exists
+{
+my ($dbh, $topic) = @_;
+
+my $equery = $dbh->prepare("SELECT id from tag WHERE name=?");
+$equery->execute($topic);
+my $foo = $equery->fetchall_arrayref();
+return defined($$foo[0][0]); # There is probably a better way to write this
+}
+
+############################
+# Helpers
+
+sub parse_post_attribs
+{
+my ($msg) = @_;
+
+my %attr; # Hold attributes to return
+my @attribstrs;
+while($msg =~ s/\[\!(.*?)\]//)
+	{push(@attribstrs, $1);}
+
+foreach my $attribstr (@attribstrs)
+	{
+	print "Parse [$attribstr]\n";
+	my ($attrib,$value) = split(/:/, $attribstr, 2);
+	if($attrib =~ /topic/i)
+		{
+		$attr{topic}{$value}=1;
+		}
+	elsif( ($attrib =~ /subject/i) || ($attrib =~ /title/i) ) # Compatibility
+		{
+		print "Note title to be $value!\n";
+		$attr{title}=$value;
+		}
+	elsif($attrib =~ /private/i)
+		{
+		$attr{private}=1;
+		}
+	elsif(! defined($value))
+		{
+		print "Ignoring unknown non-valued attribute $attrib\n";
+		}
+	else
+		{
+		print "Parsing misc attribute [$attrib] set to $value\n";
+		push(@{$attr{misc}{$attrib}}, $value);
+		}
+	}
+return %attr;
+}
+
+#########################
+# General Helpers
+sub num_to_bool($)
+{
+if($_[0]){return 't'};
+return 'f';
+}
+
+sub depath($;)
+{ # Chop off all but the last part of a full path-filename
+my ($given) = @_;
+my $returner = $given;
+$returner =~ s/^.*\///;
+return $returner;
+}
+
+sub readfile($;)
+{
+local $/;
+open(RF, $_[0]) || die("Could not open [" . $_[0] . "]: $!\n");
+my $returner = <RF>;
+close(RF);
+return $returner;
+}
+
+sub read_env
+{ # Pull needed info from environment, or fail
+my ($cfile, $req_config, $opt_config) = @_;
+
+my %cfg;
+my %mapper = (	'DWS_DB'   => 'dbase',
+		'DWS_USER' => 'user',
+		'DWS_PASS' => 'pass');
+# Env vars:
+# DWS_DB, DWS_USER, DWS_PASS
+# config keys:
+# dbase, user, pass
+
+foreach my $envvar (keys %mapper)
+	{
+	if(! defined($ENV{$envvar}))
+		{
+		die "Environment variable [$envvar] must be set\n";
+		}
+	$cfg{$mapper{$envvar}} = $ENV{$envvar};
+	}
+return %cfg;
+}
+
