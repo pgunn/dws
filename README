@@ -36,10 +36,23 @@ $ psql dws < sql/mk_db.sql
 $ psql dws < sql/db_load_sampledata.sql (this is just for demo purposes and should not be done
 for an install you intend to use)
 
+Posting things
+--------------
+There's a commandline client called dwsdc. It's meant to be used with a directory full of
+files with their name being just an epochtime, corresponding to the time the post in the file
+is meant to have been posted. You can do something like "dwsdc post 1516581464" and it'll
+post the file with that name into the blog. Features of a post are stuck inside that file
+with something like
+[!Title:This is the title of this post]
+alone on a line. There are other attributes you can set that way too.
+
+Posting of reviews is still on its way.
+
+Right now I don't plan to implement web-based posting; I don't want to think about the security side
+of that, and it'd add considerable complexity to the code (and besides, I like vim).
+
 Status
 ------
-This code is fairly bare-bones at this point, and right now it lacks a way to add new content
-into the system. Initially we will provide a CLI utility to do this. A system for web input
-for a system that's meant for only a single person to post content, particularly when that person
-(me) likes text editors, and when that would have all sorts of security issues, is at least a low
-priority.
+This code is fairly bare-bones at this point. There are unimplemented features all around,
+in the UI and elsewhere. It works though.
+
