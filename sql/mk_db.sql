@@ -233,7 +233,6 @@ INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revtimetext',   'margin-top',            '0.5em');
 
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtime',    'border',                '1px solid darkgrey');
-INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'jeheadtime',    'height',                '38px');
 
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revheadtime',   'border',                '1px solid darkgrey');
 INSERT INTO themedata(themeid, csstype, csselem, cssprop, cssval) VALUES((SELECT id FROM theme WHERE name='BaseTheme'), 'CLASS', 'revheadtime',   'height',                '38px');

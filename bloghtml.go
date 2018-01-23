@@ -23,15 +23,13 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 
 	collector = append(collector, "<div class=\"jentry\">\n")
 	collector = append(collector, "\t<div class=\"jehead\">\n")
-	collector = append(collector, "\t<div class=\"jetitle\">Title: " + bentrydata["title"] + "</div>\n")
+	collector = append(collector, "\t\t<div class=\"jetitle\">Title: " + bentrydata["title"] + "</div><!-- jetitle -->\n")
 	// Time
 	var zeit_int, _ = strconv.ParseInt(bentrydata["zeit"], 10, 64) // base 10, 64-bit output
-	var timestring = time.Unix(zeit_int, 0).Format(time.RFC3339)
-	collector = append(collector, "\t<div class=\"jeheadtime\">")
-	collector = append(collector, "<div class=\"jeheadtimet\">") // I don't remember why we had two divs here
-	collector = append(collector, "<div class=\"jeheadtimetext\">Date: " + timestring + "</div>\n")
-	collector = append(collector, "</div><!-- jeheadtimet -->")
-	collector = append(collector, "</div><!-- jeheadtime -->")
+	var timestring = time.Unix(zeit_int, 0).Format("2006-Jan-02 15:04:05 EST")
+	collector = append(collector, "\t\t<div class=\"jeheadtime\">")
+	collector = append(collector, "Date: " + timestring)
+	collector = append(collector, "\t\t</div><!-- jeheadtime -->")
 
 	if len(tags) > 0 {
 		collector = append(collector, "\t<div class=\"jetagarea\">\n")
@@ -47,6 +45,7 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 	collector = append(collector, "<p>" + content + "</p>\n")
 	collector = append(collector, "\t</div><!-- jbody -->\n")
 	collector = append(collector, "\t<div class=\"jetail\">\n")
+	collector = append(collector, get_htlink(get_dispatch_path(dbh, "blogentry") + "entry" + bentrydata["zeit"] + ".html", "LINK", true) ) // Let people see just this entry
 	// TODO Tail code here
 	collector = append(collector, "\t</div><!-- jetail -->\n")
 	collector = append(collector, "</div><!-- jentry -->")
