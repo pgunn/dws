@@ -38,7 +38,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	//   * the name of the blog owner (put this in the config table)
 	//   * RSS/Atom enabledness?
 	collector = append(collector, sthtml("My blog", true, false))
-	collector = append(collector, display_blogmain("My Blog Title", "My Name", "http://localhost/cats.jpg", nil, 40, false)) // Retrieve URL from database, document image size
+	collector = append(collector, display_blogmain(dbh, "My Blog Title", "My Name", "http://localhost/cats.jpg", get_all_tags(dbh, true), 40, false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
@@ -50,7 +50,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "<div id=\"footer\">\n")
 	collector = append(collector, "Site served by DWS\n")
 	collector = append(collector, "</div><!-- footer -->\n")
-	collector = append(collector, endhtml() ) // FIXME
+	collector = append(collector, endhtml() )
 	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
 	resp := strings.Join(collector, "")
 	io.WriteString(w, resp)
@@ -70,7 +70,7 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 	var blogentry, tags = get_blogentry(dbh, beid)
 
 	collector = append(collector, sthtml("Blog: " + blogentry["title"], true, false))
-	collector = append(collector, display_blogmain("Blog: " + blogentry["title"], "My Name", "http://localhost/cats.jpg", nil, 40, false)) // Retrieve URL from database, document image size
+	collector = append(collector, display_blogmain(dbh, "Blog: " + blogentry["title"], "My Name", "http://localhost/cats.jpg", nil, 40, false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	collector = append(collector, display_bnode(dbh, blogentry, tags))
 	collector = append(collector, "</div><!-- entrypart -->\n")

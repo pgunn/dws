@@ -73,7 +73,7 @@ func display_bnode(dbh *sql.DB, bentrydata map[string]string, tags map[string]st
 	return ret
 }
 
-func display_blogmain(title string, owner string, blogimg string, topics []string, num_archives int, do_feeds bool) string {
+func display_blogmain(dbh *sql.DB, title string, owner string, blogimg string, topics map[string]string, num_archives int, do_feeds bool) string {
 	var collector []string
 	caption_extra := "A blog by " + owner
 
@@ -96,10 +96,14 @@ func display_blogmain(title string, owner string, blogimg string, topics []strin
 	collector = append(collector, "\t\t\tArchives\n")
 	// TODO archives
 	collector = append(collector, "\t\t</div><!-- archmenu -->\n")
-	collector = append(collector, "\t\t<div id=\"topicmenu\" class=\"gmenu\">\n")
-	collector = append(collector, "\t\t\tTopics\n")
-	// TODO Topics
-	collector = append(collector, "\t\t</div><!-- topicmenu -->")
+	if topics != nil {
+		collector = append(collector, "\t\t<div id=\"topicmenu\" class=\"gmenu\">\n")
+		collector = append(collector, "\t\t\tTopics\n")
+		for tagsafename, tagname := range topics {
+			collector = append(collector, "\t\t\t\t<div class=\"tmentry\">" + get_htlink(get_dispatch_path(dbh, "blogtag") + tagsafename, tagname, false) + "</div><!-- tmentry -->\n")
+		}
+		collector = append(collector, "\t\t</div><!-- topicmenu -->")
+	}
 	collector = append(collector, "\t\t<br />\n")
 	collector = append(collector, "\t</div><!-- menupart -->\n")
 
