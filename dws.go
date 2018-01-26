@@ -39,7 +39,13 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	//   * the name of the blog owner (put this in the config table)
 	//   * RSS/Atom enabledness?
 	collector = append(collector, sthtml("My blog", true, false))
-	collector = append(collector, display_blogmain(dbh, "My Blog Title", "My Name", "http://localhost/cats.jpg", get_all_tags(dbh, true), 40, false)) // Retrieve URL from database, document image size
+	collector = append(collector, display_blogmain(dbh,
+							get_config_value(dbh, "blogtitle"),
+							get_config_value(dbh, "owner"),
+							get_config_value(dbh, "blogimg"),
+							get_all_tags(dbh, true),
+							40,
+							false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
@@ -71,7 +77,13 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 	var blogentry, tags = get_blogentry(dbh, beid)
 
 	collector = append(collector, sthtml("Blog: " + blogentry["title"], true, false))
-	collector = append(collector, display_blogmain(dbh, "Blog: " + blogentry["title"], "My Name", "http://localhost/cats.jpg", nil, 40, false)) // Retrieve URL from database, document image size
+	collector = append(collector, display_blogmain(dbh,
+							"Blog: " + blogentry["title"],
+							get_config_value(dbh, "owner"),
+							get_config_value(dbh, "blogimg"),
+							get_all_tags(dbh, true),
+							40,
+							false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	collector = append(collector, display_bnode(dbh, blogentry, tags))
 	collector = append(collector, "</div><!-- entrypart -->\n")
@@ -111,7 +123,13 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	collector = append(collector, sthtml("Blog Archive page " + strconv.Itoa(page_requested), true, false))
-	collector = append(collector, display_blogmain(dbh, "Blog Archive page " + strconv.Itoa(page_requested), "My Name", "http://localhost/cats.jpg", nil, 40, false)) // Retrieve URL from database, document image size
+	collector = append(collector, display_blogmain(dbh,
+							"Blog Archive page " + strconv.Itoa(page_requested),
+							get_config_value(dbh, "owner"),
+							get_config_value(dbh, "blogimg"),
+							nil,
+							40,
+							false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 
 	bentries := identify_blogentries_for_archive_page(dbh, page_requested, entries_per_archpage)

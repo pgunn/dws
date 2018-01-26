@@ -87,6 +87,9 @@ INSERT INTO config(name, value, avalues, description) VALUES ('entries_per_archp
 
 INSERT INTO config(name, value, avalues, description) VALUES ('blogstatic', 'http://localhost', 't[URL]', 'Base URL (includes http part) for the server');
 INSERT INTO config(name, value, avalues, description) VALUES ('main_blogname', 'dachte', 't', 'Shortname of the "main" blog (if any)');
+INSERT INTO config(name, value, avalues, description) VALUES ('owner', 'Firstname Lastname', 't', 'Person who runs the blog');
+INSERT INTO config(name, value, avalues, description) VALUES ('blogimg', 'http://localhost/cats.jpg', 't', 'Image to show at top of blog pages');
+INSERT INTO config(name, value, avalues, description) VALUES ('blogtitle', 'My Blog', 't', 'Name of the blog');
 
 -- These are paths internal to the app
 INSERT INTO config(name, value, avalues, description) VALUES('path_blogmain',		'/blog/',		't', 'Path to the main blog page');
