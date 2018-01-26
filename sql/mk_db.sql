@@ -91,6 +91,7 @@ INSERT INTO config(name, value, avalues, description) VALUES ('main_blogname', '
 -- These are paths internal to the app
 INSERT INTO config(name, value, avalues, description) VALUES('path_blogmain',		'/blog/',		't', 'Path to the main blog page');
 INSERT INTO config(name, value, avalues, description) VALUES('path_blogentry',		'/blog/entries/',	't', 'Path to blog page for a single entry');
+INSERT INTO config(name, value, avalues, description) VALUES('path_blogarchive',	'/blog/archive/',	't', 'Path to a blog archive page');
 INSERT INTO config(name, value, avalues, description) VALUES('path_blogtag',		'/blog/tags/',		't', 'Path to blog page for a particular tag');
 INSERT INTO config(name, value, avalues, description) VALUES('path_reviewsmain',	'/reviews/',		't', 'Path to the main reviews page');
 INSERT INTO config(name, value, avalues, description) VALUES('path_reviewstopic',	'/reviews/topic/',	't', 'Path to a review topic');

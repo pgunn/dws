@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -78,6 +79,54 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "<div id=\"footer\">\n")
 	collector = append(collector, "Site served by DWS\n")
 	collector = append(collector, "</div><!-- footer -->\n")
+	collector = append(collector, endhtml())
+	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
+	resp := strings.Join(collector, "")
+	io.WriteString(w, resp)
+}
+
+func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
+	// Path is something like /blog/archive/page45.html
+	var dbh = db_connect()
+	var collector []string
+
+	page_requested_str := r.URL.Path[len(get_dispatch_path(dbh, "blogarchive") + "page"):]
+	page_requested_str = strings.TrimSuffix(page_requested_str, ".html")
+	page_requested, _ := strconv.Atoi(page_requested_str)
+
+	entries_per_archpage, _ := strconv.Atoi(get_config_value(dbh, "entries_per_archpage"))
+
+	num_archivepages := get_num_archivepages(dbh, entries_per_archpage)
+
+	if page_requested < 1 || page_requested > num_archivepages {
+		// TODO: Insert code to do a redir back to the main blog page
+	}
+
+	if page_requested > 1 { // Title area should have a link to the prior archive page
+
+	}
+
+	if page_requested < num_archivepages { // Title area should have a link to the next archive page
+
+	}
+
+	collector = append(collector, sthtml("Blog Archive page " + strconv.Itoa(page_requested), true, false))
+	collector = append(collector, display_blogmain(dbh, "Blog Archive page " + strconv.Itoa(page_requested), "My Name", "http://localhost/cats.jpg", nil, 40, false)) // Retrieve URL from database, document image size
+	collector = append(collector, "<div id=\"entrypart\">\n")
+
+	bentries := identify_blogentries_for_archive_page(dbh, page_requested, entries_per_archpage)
+	for _, beid := range bentries {
+		var blogentry, tags = get_blogentry(dbh, beid)
+		collector = append(collector, display_bnode(dbh, blogentry, tags))
+	}
+
+	collector = append(collector, "</div><!-- entrypart -->\n")
+	collector = append(collector, "</div><!-- centrearea -->\n")
+	collector = append(collector, "<div id=\"footer\">\n")
+	collector = append(collector, "Site served by DWS\n")
+
+
+
 	collector = append(collector, endhtml())
 	w.Header().Set("Content-Type", "text/html") // Send HTTP headers as late as possible, ideally after errors might happen
 	resp := strings.Join(collector, "")
@@ -257,6 +306,7 @@ func main() {
 	http.HandleFunc("/",			dispatch_root)
 	http.HandleFunc(get_dispatch_path(dbh, "blogmain"),	dispatch_blog_htmlview)
 	http.HandleFunc(get_dispatch_path(dbh, "blogentry"),	dispatch_blog_entry)
+	http.HandleFunc(get_dispatch_path(dbh, "blogarchive"),	dispatch_blog_archive)
 	http.HandleFunc(get_dispatch_path(dbh, "blogtag"),	dispatch_blog_tagpage)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewsmain"),	dispatch_reviews_frontpage)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstopic"),	dispatch_reviews_topical)

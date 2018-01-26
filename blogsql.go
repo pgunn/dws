@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"math"
 )
 
 
@@ -112,3 +113,31 @@ func identify_blogentries_with_tag(dbh *sql.DB, safename string) []string {
 return ret
 }
 
+func identify_blogentries_for_archive_page(dbh *sql.DB, archpage int, archsize int) []string {
+	// Returns blogentry(id) for all blogentries that should be in the given archive page.
+	// We do not exclude private entries, because it'd be messy to have archive URLs act that way.
+	var ret []string
+
+	dbq, _ := dbh.Query("SELECT id FROM blogentry ORDER BY zeit LIMIT $1 OFFSET $2", archsize, archpage)
+	for dbq.Next() {
+		var beid string
+		dbq.Scan(&beid)
+		ret = append(ret, beid)
+	}
+return ret
+}
+
+func get_num_archivepages(dbh *sql.DB, archsize int) int {
+	nentries := get_blog_numentries(dbh)
+	ret := int(math.Ceil(float64(nentries)/float64(archsize) ))
+	return ret
+}
+
+func get_blog_numentries(dbh *sql.DB) int {
+	dbq, _ := dbh.Query("SELECT COUNT(id) FROM blogentry")
+	var ret int
+	for dbq.Next() {
+		dbq.Scan(&ret)
+	}
+	return ret
+}
