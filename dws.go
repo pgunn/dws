@@ -119,7 +119,8 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 	var archive_navigator []string
 
 	if page_requested < 1 || page_requested > num_archivepages {
-		// TODO: Insert code to do a redir back to the main blog page
+		http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		return
 	}
 
 	if page_requested > 1 { // Title area should have a link to the prior archive page
