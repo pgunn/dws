@@ -47,9 +47,9 @@ func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) [
 	var dbq *sql.Rows
 
 	if include_private {
-		dbq, _ = dbh.Query("SELECT id FROM blogentry ORDER BY zeit LIMIT $2", include_private, count)
+		dbq, _ = dbh.Query("SELECT id FROM blogentry ORDER BY zeit DESC LIMIT $2", include_private, count)
 	} else {
-		dbq, _ = dbh.Query("SELECT id FROM blogentry WHERE private=false ORDER BY zeit LIMIT $1", count)
+		dbq, _ = dbh.Query("SELECT id FROM blogentry WHERE private=false ORDER BY zeit DESC LIMIT $1", count)
 	}
 	for dbq.Next() {
 		var retval string
