@@ -1,0 +1,11 @@
+[Unit]
+Description=Dachte Web Service
+Requires=postgresql.service
+After=postgresql.service
+
+[Service]
+EnvironmentFile=/run/dws/dws-env.conf
+ExecStart=/usr/local/bin/dws
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=dws

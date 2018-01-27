@@ -172,7 +172,7 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 		collector = append(collector, "<h1>All Tags</h1><br />\n")
 		collector = append(collector, "<ul>\n")
 		for tagsafename, tagname := range tags {
-			collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "blogtag") + tagsafename, tagname, false) + "</li>\n") // TODO: Make this a link
+			collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "blogtag") + tagsafename, tagname, false) + "</li>\n")
 		}
 		collector = append(collector, "</ul>\n")
 	} else { // TODO: This page is ugly. Fix that.

@@ -1,0 +1,16 @@
+You can run dws from systemd. This directory contains files designed to make that easier.
+Remember that dws depeneds on postgres; it should not start up before postgres because it
+will fail if it does.
+
+* dws.service is the main unitfile for dws; it should probably be installed as
+	/etc/systemd/system/dws.service
+
+* dws-env.conf is a configfile for dws that sets environment variables for it to run.
+	See the main DWS docs for info on what goes in there. It should probably be installed as
+	/run/dws/dws-env.conf
+
+* dws-syslog.conf is a syslog config for dws that will tell syslog to log its output to
+	reasonable configs. It should probably be installed as
+	/etc/rsyslog.d/dws-syslog.conf
+
+You should look over these configs and customise them as you like.
