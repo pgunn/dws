@@ -73,9 +73,8 @@ func display_bnode(dbh *sql.DB, bentrydata map[string]string, tags map[string]st
 	return ret
 }
 
-func display_blogmain(dbh *sql.DB, title string, owner string, blogimg string, topics map[string]string, num_archives int, do_feeds bool) string {
+func display_blogmain(dbh *sql.DB, title string, caption_extra string, blogimg string, topics map[string]string, num_archives int, do_feeds bool) string {
 	var collector []string
-	caption_extra := "A blog by " + owner
 
 	collector = append(collector, "<div id=\"toparea\">\n")
 	collector = append(collector, "<div id=\"caption\">\n")

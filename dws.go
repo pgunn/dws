@@ -44,7 +44,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, sthtml("My blog", true, false))
 	collector = append(collector, display_blogmain(dbh,
 							get_config_value(dbh, "blogtitle"),
-							get_config_value(dbh, "owner"),
+							"A blog by " + get_config_value(dbh, "owner"),
 							get_config_value(dbh, "blogimg"),
 							get_all_tags(dbh, true),
 							num_archivepages,
@@ -86,7 +86,7 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, sthtml("Blog: " + blogentry["title"], true, false))
 	collector = append(collector, display_blogmain(dbh,
 							"Blog: " + blogentry["title"],
-							get_config_value(dbh, "owner"),
+							blogentry["title"], // Title is just the entry title
 							get_config_value(dbh, "blogimg"),
 							get_all_tags(dbh, true),
 							num_archivepages,
@@ -116,23 +116,25 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 	entries_per_archpage, _ := strconv.Atoi(get_config_value(dbh, "entries_per_archpage"))
 
 	num_archivepages := get_num_archivepages(dbh, entries_per_archpage)
+	var archive_navigator []string
 
 	if page_requested < 1 || page_requested > num_archivepages {
 		// TODO: Insert code to do a redir back to the main blog page
 	}
 
 	if page_requested > 1 { // Title area should have a link to the prior archive page
-
+		archive_navigator = append(archive_navigator, get_htlink(get_dispatch_path(dbh, "blogarchive") + "page" + strconv.Itoa(page_requested - 1) + ".html", "[Past]", true))
 	}
 
 	if page_requested < num_archivepages { // Title area should have a link to the next archive page
+		archive_navigator = append(archive_navigator, get_htlink(get_dispatch_path(dbh, "blogarchive") + "page" + strconv.Itoa(page_requested + 1) + ".html", "[Future]", true))
 
 	}
 
 	collector = append(collector, sthtml("Blog Archive page " + strconv.Itoa(page_requested), true, false))
 	collector = append(collector, display_blogmain(dbh,
-							"Blog Archive page " + strconv.Itoa(page_requested),
-							get_config_value(dbh, "owner"),
+							"Archives, page " + strconv.Itoa(page_requested),
+							strings.Join(archive_navigator, ""),
 							get_config_value(dbh, "blogimg"),
 							nil,
 							num_archivepages,
