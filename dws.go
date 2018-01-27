@@ -38,13 +38,16 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	//   * the calculated number of archive pages
 	//   * the name of the blog owner (put this in the config table)
 	//   * RSS/Atom enabledness?
+	entries_per_archpage, _ := strconv.Atoi(get_config_value(dbh, "entries_per_archpage"))
+	num_archivepages := get_num_archivepages(dbh, entries_per_archpage)
+
 	collector = append(collector, sthtml("My blog", true, false))
 	collector = append(collector, display_blogmain(dbh,
 							get_config_value(dbh, "blogtitle"),
 							get_config_value(dbh, "owner"),
 							get_config_value(dbh, "blogimg"),
 							get_all_tags(dbh, true),
-							40,
+							num_archivepages,
 							false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
@@ -71,6 +74,10 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 	var dbh = db_connect()
 	var collector []string
 
+	entries_per_archpage, _ := strconv.Atoi(get_config_value(dbh, "entries_per_archpage"))
+
+	num_archivepages := get_num_archivepages(dbh, entries_per_archpage)
+
 	blog_entryzeit_with_suffix := r.URL.Path[len(get_dispatch_path(dbh, "blogentry") + "entry"):]
 	blog_entryzeit := strings.TrimSuffix(blog_entryzeit_with_suffix, ".html")
 	beid := get_beid_by_zeit(dbh, blog_entryzeit) // TODO: Error handling if the zeit does not exist
@@ -82,7 +89,7 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 							get_config_value(dbh, "owner"),
 							get_config_value(dbh, "blogimg"),
 							get_all_tags(dbh, true),
-							40,
+							num_archivepages,
 							false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	collector = append(collector, display_bnode(dbh, blogentry, tags))
@@ -128,7 +135,7 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 							get_config_value(dbh, "owner"),
 							get_config_value(dbh, "blogimg"),
 							nil,
-							40,
+							num_archivepages,
 							false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
 

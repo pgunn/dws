@@ -118,7 +118,7 @@ func identify_blogentries_for_archive_page(dbh *sql.DB, archpage int, archsize i
 	// We do not exclude private entries, because it'd be messy to have archive URLs act that way.
 	var ret []string
 
-	dbq, _ := dbh.Query("SELECT id FROM blogentry ORDER BY zeit LIMIT $1 OFFSET $2", archsize, archpage)
+	dbq, _ := dbh.Query("SELECT id FROM blogentry ORDER BY zeit LIMIT $1 OFFSET $2", archsize, archsize * (archpage - 1))
 	for dbq.Next() {
 		var beid string
 		dbq.Scan(&beid)

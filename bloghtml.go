@@ -89,13 +89,15 @@ func display_blogmain(dbh *sql.DB, title string, owner string, blogimg string, t
 	collector = append(collector, "</div><!-- caption -->\n")
 	collector = append(collector, "</div><!-- toparea -->\n")
 
-	// TODO tmentry div and its contents (topics)
 	collector = append(collector, "<div id=\"centrearea\">\n") // We leave this open
 	collector = append(collector, "\t<div id=\"menupart\">\n")
-	collector = append(collector, "\t\t<div id=\"archmenu\" class=\"gmenu\">\n")
-	collector = append(collector, "\t\t\tArchives\n")
-	// TODO archives
-	collector = append(collector, "\t\t</div><!-- archmenu -->\n")
+	if num_archives > 0 {
+		collector = append(collector, "\t\t<div id=\"archmenu\" class=\"gmenu\">\n")
+		collector = append(collector, "\t\t\tArchives\n")
+		collector = append(collector, "\t\t\t<div class=\"arentry\">" + get_htlink(get_dispatch_path(dbh, "blogarchive") + "page1.html", "First Page", true) + "</div><!-- arentry -->\n")
+		collector = append(collector, "\t\t\t<div class=\"arentry\">" + get_htlink(get_dispatch_path(dbh, "blogarchive") + "page" + strconv.Itoa(num_archives) + ".html", "Last Page", true) + "</div><!-- arentry -->\n")
+		collector = append(collector, "\t\t</div><!-- archmenu -->\n")
+	}
 	if topics != nil {
 		collector = append(collector, "\t\t<div id=\"topicmenu\" class=\"gmenu\">\n")
 		collector = append(collector, "\t\t\tTopics\n")
