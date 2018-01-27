@@ -1,0 +1,22 @@
+The way I have this configured (which is not necessarily the way you will use it) is
+to setup apache2 as a reverse proxy to the dws webserver.
+
+For these instructions I assume postgres is running, dws is running, and the minimal
+dataset (not necessarily including sample data) is loaded into the database.
+
+To do this:
+
+1) Enable the proxying modules in apache. You can do this with this command:
+	a2enmod proxy_http
+2) Add another DNS name to the host running apache and dws. This name will be used
+	only for dws. For my site I initially picked blog4.dachte.org
+3) Install a proxying configfile telling apache to reverse proxy all incoming requests
+	for that site to localhost:8000 (or whatever port you picked). A sample config
+	for this is included in this directory; depending on what your Linux vendor
+	did in terms of Apache paths, there's some variance in where this should go,
+	but on Debian it should be placed in /etc/apache2/sites-enabled/001-dws.conf
+	You will want to customise this for whatever hostname you picked.
+4) Restart apache and with any luck, visiting the hostname will take you to your DWS
+	install.
+5) Go enjoy a nice cup of tea before you start blogging or reviewing things.
+
