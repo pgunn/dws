@@ -340,5 +340,5 @@ func main() {
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstopic"),	dispatch_reviews_topical)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstarget"),dispatch_reviews_target)
 	http.HandleFunc(get_dispatch_path(dbh, "cssmain"),	dispatch_css)
-	http.ListenAndServe(":" + port, nil)
+	http.ListenAndServe("localhost:" + port, nil)
 }
