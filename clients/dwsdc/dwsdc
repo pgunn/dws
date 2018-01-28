@@ -156,8 +156,8 @@ sub erase_blogentry
 {
 my ($dbh, $zeit) = @_;
 
-$dbh->do("DELETE FROM blogentry_tags WHERE beid=(SELECT id FROM blogentry WHERE zeit=?)", $zeit);
-$dbh->do("DELETE FROM blogentry WHERE zeit=?", $zeit);
+$dbh->do("DELETE FROM blogentry_tags WHERE beid=(SELECT id FROM blogentry WHERE zeit=?)", undef, $zeit);
+$dbh->do("DELETE FROM blogentry WHERE zeit=?", undef, $zeit);
 }
 
 sub blog_post
