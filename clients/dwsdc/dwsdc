@@ -25,8 +25,10 @@ elsif($cmd =~ /^list$/i)
 	{do_list($dbh);}
 elsif($cmd =~ /^topic$/i)
 	{do_topic($dbh, @args);}
-elsif($cmd =~ /^config$/i)
-	{do_config($dbh, @args);}
+elsif($cmd =~ /^configs$/i)
+	{do_configs($dbh, @args);}
+elsif($cmd =~ /^configset$/i)
+	{do_config_set($dbh, @args);}
 else
 	 {$dbh->disconnect();die "unrecognized command\n";}
 $dbh->disconnect();
@@ -44,9 +46,30 @@ else
 return $dbh;
 }
 
-sub do_config($$$)
-{ # FIXME Add ability to list config and add new config keys
+sub do_configs($)
+{
+my ($dbh) = @_;
+
+my $cset = $dbh->prepare("SELECT name, value, avalues, description FROM config");
+$cset->execute();
+my $format = "%-25s %-50s %-12s %s\n";
+printf $format, "Name", "Value", "Type", "Description";
+print "-" x 80 . "\n";
+while(my $res = $cset->fetchrow_hashref() )
+	{
+	printf $format, $$res{name}, $$res{value}, $$res{avalues}, $$res{description};
+	}
+}
+
+sub do_config_set($$$)
+{
 my ($dbh, $key, $val) = @_;
+
+if(	(!defined $key)
+||	(!defined $val))
+	{
+	die "You must provide a key and value. Use quotes to enclose fields with spaces.\n";
+	}
 my $cset = $dbh->prepare("UPDATE config SET value=? WHERE name=?");
 $cset->execute($val, $key);
 }
@@ -92,6 +115,14 @@ sub do_topic($$$$$;)
 {
 my ($dbh, $tname, $safename, $desc) = @_;
 # later do sanity checks on topic names to ban spaces and the like
+
+if(	(!defined $tname)
+||	(!defined $safename)
+||	(!defined $desc))
+	{
+	die "You must provide a topic, its safename, and a description. Use quotes to enclose fields with spaces\n";
+	}
+
 if(topic_exists($dbh, $tname))
 	{
 	update_topic($dbh, $tname, $desc);
