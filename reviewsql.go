@@ -45,18 +45,19 @@ func get_all_targets_in_topic(dbh *sql.DB, topicsafename string) map [string]str
 	return ret
 }
 
-func get_longname_for_target(dbh *sql.DB, targetsafename string) string {
-	// TODO: Cleanup
+func get_longname_for_target(dbh *sql.DB, targetsafename string) (string, bool) {
+	// For reviews, translate a safename into a long "display" name. Returns false
+	// if it can't find the safename.
 	dbq, err := dbh.Query("SELECT name FROM review_target WHERE safename=$1", targetsafename)
 	if err != nil {
-		return ""
+		return "", false
 	}
 	for dbq.Next() {
 		var name string
 		dbq.Scan(&name)
-		return name
+		return name, true
 	}
-	return ""
+	return "", false
 }
 
 func identify_all_reviews_for_target(dbh *sql.DB, targetsafename string) []string {

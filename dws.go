@@ -52,7 +52,11 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, "<div id=\"entrypart\">\n")
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
-		var blogentry, tags = get_blogentry(dbh, entryid)
+		var blogentry, tags, ok = get_blogentry(dbh, entryid)
+		if !ok { // Something went wrong somehow in retrieving one of these
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			return
+		}
 		collector = append(collector, display_bnode(dbh, blogentry, tags))
 	}
 	collector = append(collector, "</div><!-- entrypart -->\n")
@@ -80,8 +84,17 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 
 	blog_entryzeit_with_suffix := r.URL.Path[len(get_dispatch_path(dbh, "blogentry") + "entry"):]
 	blog_entryzeit := strings.TrimSuffix(blog_entryzeit_with_suffix, ".html")
-	beid := get_beid_by_zeit(dbh, blog_entryzeit) // TODO: Error handling if the zeit does not exist
-	var blogentry, tags = get_blogentry(dbh, beid)
+	beid, ok := get_beid_by_zeit(dbh, blog_entryzeit) // TODO: Error handling if the zeit does not exist
+	if !ok {	// XXX We could return an error in this case, but is that useful?
+		http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		return
+	}
+
+	blogentry, tags, ok := get_blogentry(dbh, beid)
+	if !ok { // Retrieval failed. Really should not happen given that we just checked above.
+		http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		return
+	}
 
 	collector = append(collector, sthtml("Blog: " + blogentry["title"], true, false))
 	collector = append(collector, display_blogmain(dbh,
@@ -144,7 +157,11 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 
 	bentries := identify_blogentries_for_archive_page(dbh, page_requested, entries_per_archpage)
 	for _, beid := range bentries {
-		var blogentry, tags = get_blogentry(dbh, beid)
+		var blogentry, tags, ok = get_blogentry(dbh, beid)
+		if !ok { // Internal error
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			return
+		}
 		collector = append(collector, display_bnode(dbh, blogentry, tags))
 	}
 
@@ -176,7 +193,11 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 		}
 		collector = append(collector, "</ul>\n")
 	} else { // TODO: This page is ugly. Fix that.
-		longname := get_longname_for_safe_tag(dbh, tag_safename)
+		longname, ok := get_longname_for_safe_tag(dbh, tag_safename)
+		if !ok {
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			return
+		}
 		tag_description := get_tag_description(dbh, tag_safename)
 		bentries := identify_blogentries_with_tag(dbh, tag_safename)
 
@@ -185,7 +206,11 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 		collector = append(collector, tag_description + "<br />\n")
 		collector = append(collector, "<ul>Entries\n")
 		for _, beid := range bentries {
-			bentry, _ := get_blogentry(dbh, beid)
+			bentry, _, ok := get_blogentry(dbh, beid)
+			if !ok {
+				http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+				return
+			}
 			collector = append(collector, "<li>" + get_htlink(path_to_blogentry(dbh, bentry["zeit"]), bentry["zeit"], true) + ": " + bentry["title"] + "</li>\n")
 		}
 		collector = append(collector, "</ul>\n")
@@ -202,7 +227,11 @@ func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
 	var resp = ""
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
-		var blogentry, _ = get_blogentry(dbh, entryid)
+		var blogentry, _, ok = get_blogentry(dbh, entryid)
+		if !ok { // Something went wrong somehow in retrieving one of these
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			return
+		}
 		resp += "Begin blogentry\n"
 		resp += "Title: " + blogentry["title"] + "\n"
 		resp += "Posted: " + blogentry["zeit"] + "\n"
@@ -294,7 +323,12 @@ func dispatch_reviews_target(w http.ResponseWriter, r *http.Request) {
 	var collector []string
 
 	target_safename := r.URL.Path[len(get_dispatch_path(dbh, "reviewstarget")):] // chop off the leading path
-	target := get_longname_for_target(dbh, target_safename)
+	target, ok := get_longname_for_target(dbh, target_safename)
+
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+		return
+	}
 
 	collector = append(collector, sthtml("Review: " + target, true, false)) // todo: extend title to include target name
 	collector = append(collector, display_reviewmain())
