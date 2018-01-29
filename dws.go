@@ -14,6 +14,8 @@ import (
 
 func dispatch_root(w http.ResponseWriter, r *http.Request) {
 	var dbh = db_connect()
+	defer dbh.Close()
+
 	var collector []string
 	collector = append(collector, sthtml("Main page", true, false))
 	collector = append(collector, "<ul>\n")
@@ -29,6 +31,8 @@ func dispatch_root(w http.ResponseWriter, r *http.Request) {
 
 func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	var dbh = db_connect()
+	defer dbh.Close()
+
 	var collector []string
 	// display_blogmain() generates the framing content for a blogview, including
 	// all the sidebars and topbar. If we want it to be pure-html (or at least restricted to
@@ -76,6 +80,7 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 	// so we're going to need to do a bit of string parsing to get the numeric part out.
 	// TODO: Need to verify safety of the manipulation we're doing
 	var dbh = db_connect()
+	defer dbh.Close()
 	var collector []string
 
 	entries_per_archpage, _ := strconv.Atoi(get_config_value(dbh, "entries_per_archpage"))
@@ -120,6 +125,7 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 	// Path is something like /blog/archive/page45.html
 	var dbh = db_connect()
+	defer dbh.Close()
 	var collector []string
 
 	page_requested_str := r.URL.Path[len(get_dispatch_path(dbh, "blogarchive") + "page"):]
@@ -180,6 +186,7 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 
 func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 	var dbh = db_connect()
+	defer dbh.Close()
 	var collector []string
 
 	tag_safename := r.URL.Path[len(get_dispatch_path(dbh, "blogtag")):] // chop off the leading path.
@@ -224,6 +231,7 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
 	// Saving this because it's a good template for other views of the blog data
 	var dbh = db_connect()
+	defer dbh.Close()
 	var resp = ""
 	var last_ten_entries = identify_last_n_blogentries(dbh, 10, false)
 	for _, entryid := range last_ten_entries {
@@ -261,6 +269,8 @@ func dispatch_css(w http.ResponseWriter, r *http.Request) {
 	// This is loosely based off of:
 	//   https://github.com/pgunn/pound/blob/master/mod_perl/MyApache/POUND/POUNDCSS.pm
 	var dbh = db_connect()
+	defer dbh.Close()
+
 	resp := get_css(dbh, "")
 	w.Header().Set("Content-Type", "text/css")
 	w.WriteHeader(200)
@@ -272,6 +282,7 @@ func dispatch_reviews_frontpage(w http.ResponseWriter, r *http.Request) {
 	// under which particular reviews are categorised. Think stuff like
 	// "restaurants". It should say how many targets there are under each topic.
 	var dbh = db_connect()
+	defer dbh.Close()
 	var collector []string
 
 	collector = append(collector, sthtml("Reviews - Topics", true, false))
@@ -295,6 +306,7 @@ func dispatch_reviews_topical(w http.ResponseWriter, r *http.Request) {
 	// It should say how many "thoughts" there are for each review target.
 	// links go to /reviews/on/$target
 	var dbh = db_connect()
+	defer dbh.Close()
 	var collector []string
 
 	topic_safename := r.URL.Path[len(get_dispatch_path(dbh, "reviewstopic")):] // chop off the leading path.
@@ -320,6 +332,7 @@ func dispatch_reviews_target(w http.ResponseWriter, r *http.Request) {
 	// The URL-pattern for these is /reviews/on/$safename
 	// (safename is a normalised version of the name that must be composed of boring characters)
 	var dbh = db_connect()
+	defer dbh.Close()
 	var collector []string
 
 	target_safename := r.URL.Path[len(get_dispatch_path(dbh, "reviewstarget")):] // chop off the leading path
@@ -363,7 +376,9 @@ func getenv_with_default(key, fallback string) string {
 // Finally our main function
 func main() {
 	var dbh = db_connect()
-	print("CSS is at " + get_dispatch_path(dbh, "cssmain") + "\n")
+	defer dbh.Close()
+
+	print("Starting DWS")
 	port := getenv_with_default("DWS_PORT", "8000")
 	http.HandleFunc("/",			dispatch_root)
 	http.HandleFunc(get_dispatch_path(dbh, "blogmain"),	dispatch_blog_htmlview)
