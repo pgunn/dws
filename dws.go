@@ -61,7 +61,7 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 			return
 		}
-		collector = append(collector, display_bnode(dbh, blogentry, tags))
+		collector = append(collector, display_bnode(dbh, blogentry, tags, "entrylist"))
 	}
 	collector = append(collector, "</div><!-- entrypart -->\n")
 	collector = append(collector, "</div><!-- centrearea -->\n")
@@ -110,7 +110,7 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 							num_archivepages,
 							false)) // Retrieve URL from database, document image size
 	collector = append(collector, "<div id=\"entrypart\">\n")
-	collector = append(collector, display_bnode(dbh, blogentry, tags))
+	collector = append(collector, display_bnode(dbh, blogentry, tags, "single"))
 	collector = append(collector, "</div><!-- entrypart -->\n")
 	collector = append(collector, "</div><!-- centrearea -->\n")
 	collector = append(collector, "<div id=\"footer\">\n")
@@ -168,7 +168,7 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 			return
 		}
-		collector = append(collector, display_bnode(dbh, blogentry, tags))
+		collector = append(collector, display_bnode(dbh, blogentry, tags, "entrylist"))
 	}
 
 	collector = append(collector, "</div><!-- entrypart -->\n")

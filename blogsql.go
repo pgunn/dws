@@ -15,13 +15,16 @@ func get_blogentry(dbh *sql.DB, id string) (map[string]string, map[string]string
 	var ok bool
 	ok = false // Need to find one before we decide we're happy
 
-	dbq, _ := dbh.Query("SELECT title, zeit, body FROM blogentry WHERE id=$1", id)
+	dbq, _ := dbh.Query("SELECT title, zeit, body, music FROM blogentry WHERE id=$1", id)
 	for dbq.Next() {
-		var title, zeit, body string
-		dbq.Scan(&title, &zeit, &body)
+		var title, zeit, body, music string
+		dbq.Scan(&title, &zeit, &body, &music)
 		mymap["title"] = title
 		mymap["zeit"] = zeit
 		mymap["body"] = body
+		if music != "" {
+			mymap["music"] = music
+		}
 		ok = true // We've got one
 	}
 	dbq, _ = dbh.Query("SELECT name, safename FROM tag WHERE id IN (SELECT tagid FROM blogentry_tags WHERE beid=$1)", id)

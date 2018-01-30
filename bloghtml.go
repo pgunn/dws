@@ -33,11 +33,16 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 
 	if len(tags) > 0 {
 		collector = append(collector, "\t<div class=\"jetagarea\">\n")
-		collector = append(collector, "Tags: ")
+		collector = append(collector, "<div style=\"float:left;margin-right:1em;\">Tags: </div>")
 		for safetag, tag := range tags {
 			collector = append(collector, " " + get_htlink(get_dispatch_path(dbh, "blogtag") + safetag, tag, false))
 		}
 		collector = append(collector, "\t</div><!-- tagarea -->\n")
+	}
+
+	if music, present := bentrydata["music"]; present {
+		collector = append(collector, "<div style=\"float:left;margin-right:1em;\">Music: </div>")
+		collector = append(collector, music + "\n")
 	}
 	// TODO Code for jemisc, the extensible area for extra tabular data like music
 	collector = append(collector, "</div><!-- jehead -->\n")
@@ -54,7 +59,7 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 	return ret
 }
 
-func display_bnode(dbh *sql.DB, bentrydata map[string]string, tags map[string]string) string {
+func display_bnode(dbh *sql.DB, bentrydata map[string]string, tags map[string]string, context string) string {
 	// Return HTML for a single blog entry. Called both for single-entry view
 	// as well as showing a bunch on a page. This code is a lot less abstract than
 	// the equivalent POUND code, since this blog engine doesn't do nearly as much.
@@ -66,7 +71,7 @@ func display_bnode(dbh *sql.DB, bentrydata map[string]string, tags map[string]st
 	// TODO: Footer section (also passed to bnode) with a link to just this entry
 
 	// Render the markup language.
-	var content, _ = do_markup(bentrydata["body"], "blogentryv1")
+	var content, _ = do_markup(bentrydata["body"], "html", context)
 	var ret = draw_bnode(dbh, bentrydata, content, tags)
 	// draw_bnode() consumed the output of that and actually spat out the code.
 	// in draw_bnode()

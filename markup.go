@@ -17,8 +17,8 @@ import (
 // might pass to the func a []string of the capture group matches rather than
 // the entire match. It does not, so the functions we use need to clean some things out.
 
-func do_markup(data string, rendermode string) (string, map[string]string) {
-	// For the old wikimarkup rendermode:
+func do_markup(data string, render_target string, display_context string) (string, map[string]string) {
+	// 	display_context currently includes "single", "entrylist", and "review". We handle cuts differently based on that.
 	//	extract_attrs() to pull attributes out
 	//	linelevel_markup() iterates over lines handling
 	//		wiki-style lists and doing paragraphs
@@ -30,7 +30,11 @@ func do_markup(data string, rendermode string) (string, map[string]string) {
 	data, attrs = extract_attrs(data)
 	data = linelevel_markup(data)
 	data = elevel_markup(data)
-	// TODO cuts work here
+	if display_context == "entrylist" {
+		rex_hidecuts := regexp.MustCompile(`<cut>.*?</cut>`)
+		cut_hat := func(matched string) string { return "<br /><b>(Expand post to view behind cut - " + strconv.Itoa(len(matched)) + " characters)</b><br />\n" }
+		data = rex_hidecuts.ReplaceAllStringFunc(data, cut_hat)
+	}
 
 	return data, attrs
 }
