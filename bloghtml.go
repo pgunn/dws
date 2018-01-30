@@ -34,9 +34,11 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 	if len(tags) > 0 {
 		collector = append(collector, "\t<div class=\"jetagarea\">\n")
 		collector = append(collector, "<div style=\"float:left;margin-right:1em;\">Tags: </div>")
+		var tagparts []string
 		for safetag, tag := range tags {
-			collector = append(collector, " " + get_htlink(get_dispatch_path(dbh, "blogtag") + safetag, tag, false))
+			tagparts = append(tagparts, " " + get_htlink(get_dispatch_path(dbh, "blogtag") + safetag, tag, false))
 		}
+		collector = append(collector, strings.Join(tagparts, ", "))
 		collector = append(collector, "\t</div><!-- tagarea -->\n")
 	}
 
