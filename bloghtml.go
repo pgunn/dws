@@ -23,7 +23,7 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 
 	collector = append(collector, "<div class=\"jentry\">\n")
 	collector = append(collector, "\t<div class=\"jehead\">\n")
-	collector = append(collector, "\t\t<div class=\"jetitle\">Title: " + bentrydata["title"] + "</div><!-- jetitle -->\n")
+	collector = append(collector, "\t\t<div class=\"jetitle\">" + bentrydata["title"] + "</div><!-- jetitle -->\n")
 	// Time
 	var zeit_int, _ = strconv.ParseInt(bentrydata["zeit"], 10, 64) // base 10, 64-bit output
 	var timestring = time.Unix(zeit_int, 0).Format("2006-Jan-02 15:04:05 EST")
