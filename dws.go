@@ -378,7 +378,7 @@ func main() {
 	var dbh = db_connect()
 	defer dbh.Close()
 
-	print("Starting DWS")
+	print("Starting DWS\n")
 	port := getenv_with_default("DWS_PORT", "8000")
 	http.HandleFunc("/",			dispatch_root)
 	http.HandleFunc(get_dispatch_path(dbh, "blogmain"),	dispatch_blog_htmlview)

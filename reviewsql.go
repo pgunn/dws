@@ -85,15 +85,16 @@ func get_review(dbh *sql.DB, id string) map[string]string {
 
 	dbq, err := dbh.Query("SELECT title, zeit, body, rating FROM review WHERE id=$1", id)
 	if err != nil {
+		print("Internal error in get_review!\n")
 		return ret
 	}
 	for dbq.Next() { // Should only return one tuple
-		var title, zeit, body, rating string
+		var title, zeit, body, rating sql.NullString
 		dbq.Scan(&title, &zeit, &body, &rating)
-		ret["title"] = title
-		ret["zeit"] = zeit
-		ret["body"] = body
-		ret["rating"] = rating
+		if title.Valid  { ret["title"] = title.String }
+		if zeit.Valid   { ret["zeit"] = zeit.String }
+		if body.Valid   { ret["body"] = body.String }
+		if rating.Valid { ret["rating"] = rating.String }
 	}
 	return ret
 }

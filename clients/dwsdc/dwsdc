@@ -20,7 +20,11 @@ my %config = read_env();
 my $dbh = do_connect($config{dbase}, $config{user}, $config{pass});
 
 if($cmd =~ /^post$/i)
-	{do_post($dbh, @args)} # 1+ argument, the name of the file(s) to post
+	{do_post($dbh, @args)} # argument is the name of the file(s) to post
+elsif($cmd =~ /^revpost$/i)
+	{do_revpost($dbh, @args)} # first arg is review category. second argument is the name of the file(s) to post
+elsif($cmd =~ /^review_register_category$/i)
+	{do_review_register_category($dbh, @args)} # first arg is a category name, second is a category safename
 elsif($cmd =~ /^list$/i)
 	{do_list($dbh);}
 elsif($cmd =~ /^topic$/i)
@@ -78,14 +82,14 @@ sub handle_args
 {
 my @my_argv = @ARGV;
 if((@my_argv == 0) || ($my_argv[0] =~ /^-?-?h(:?elp)?$/) )
-	{do_help();}
+	{usage();}
 my $cmd = shift(@my_argv);
-if($cmd =~ /-?-?v(:?ersion)?/)
+if($cmd =~ /^-?-?v(:?ersion)?/)
 	{do_version();}
 return ($cmd, @my_argv); # Remember, we shifted it.
 }
 
-sub do_help
+sub usage
 {
 print <<EOHELP;
 DWSDC - The DWS client
@@ -95,7 +99,8 @@ Commands:
 	list - Displays list of all entries
 	topic \$topicname \$topicsafename \$description - Create or update description on a topic
 	config \$key \$value - Updates an already-defined key-value in the config
-
+	revpost \$category \$msgid - Posts or updates review with the provided file
+	review_register_category \$name \$safename - Register a new review category
 EOHELP
 exit;
 }
@@ -158,6 +163,29 @@ foreach my $fn (@fns)
 	}
 }
 
+sub do_revpost
+{
+# We take as the first argument to this subcommand the review category (predefined by this tool).
+# It's important that we require review files to look like a review
+# before we accept them. Posts should define the review target using the [!Target:targetname:targetsafename] attribute
+my ($dbh, $category, @fns) = @_;
+foreach my $fn (@fns)
+	{
+	print "Parse file $fn\n";
+	my $msgid = depath($fn);
+	my $entfile = readfile($fn);
+	my %attrs = parse_review_attribs($entfile);
+	print "File loaded, preparing to post..\n";
+	if(review_exists($dbh, $msgid))
+		{ # Make existing entry into a stub, clear all topics/etc
+		print "Post exists, purging for repost..\n";
+		erase_review($dbh, $msgid);
+		}
+	print "Posting review..\n";
+	review_post($dbh, $category, $msgid, $entfile, \%attrs);
+	}
+}
+
 sub do_list($)
 {
 my ($dbh) = @_;
@@ -170,8 +198,25 @@ while(my $result = $lquery->fetchrow_hashref() )
 	}
 }
 
+sub do_review_register_category
+{
+my ($dbh, $catname, $catsafename) = @_;
+
+register_review_category($dbh, $catname, $catsafename);
+}
+
 ############################
 # DB Helpers
+
+sub review_exists
+{
+my ($dbh, $zeit) = @_;
+
+my $equery = $dbh->prepare("SELECT id from review WHERE zeit=?");
+$equery->execute($zeit);
+my $foo = $equery->fetchall_arrayref();
+return defined($$foo[0][0]); # There is probably a better way to write this
+}
 
 sub msgid_exists($$;)
 {
@@ -190,6 +235,14 @@ my ($dbh, $zeit) = @_;
 $dbh->do("DELETE FROM blogentry_tags WHERE beid=(SELECT id FROM blogentry WHERE zeit=?)", undef, $zeit);
 $dbh->do("DELETE FROM blogentry WHERE zeit=?", undef, $zeit);
 }
+
+sub erase_review
+{
+my ($dbh, $zeit) = @_;
+
+$dbh->do("DELETE FROM review WHERE zeit=?", undef, $zeit);
+}
+
 
 sub blog_post
 {
@@ -211,6 +264,81 @@ foreach my $topic (keys %{$$attref{topic}})
 		warn "Ignoring nonexistent topic [$topic]\n";
 		}
 	}
+}
+
+sub review_post
+{
+my ($dbh, $category, $zeit, $contents, $attref) = @_;
+
+# If review target exists, get its id
+# Otherwise register it under the category and then get its id
+if(! review_category_exists($dbh, $category))
+	{
+	die "Review category does not exist. Create that first.\n";
+	}
+if(! review_target_exists($dbh, $$attref{target}))
+	{
+	register_review_target($dbh, $category, $$attref{target}, $$attref{targetsafe});
+	}
+my $revtargetid = review_target_lookup($dbh, $$attref{target});
+
+# Do the post
+my $poster = $dbh->prepare("INSERT INTO review(zeit, title, body, rating, target) VALUES(?,?,?,?,?)");
+$poster->execute($zeit, $$attref{title}, $contents, $$attref{rating}, $revtargetid);
+}
+
+sub register_review_target
+{
+my ($dbh, $category, $revname, $revsafename) = @_;
+
+if (! review_category_exists($dbh, $category))
+	{
+	die "Review category does not exist. Create that first\n";
+	}
+my $equery = $dbh->prepare("INSERT INTO review_target(name, safename, topic) VALUES (?,?, (SELECT id FROM review_topic WHERE name=?) )"); 
+$equery->execute($revname, $revsafename, $category);
+}
+
+sub register_review_category
+{
+my ($dbh, $catname, $catsafename) = @_;
+
+if(review_category_exists($dbh, $catname))
+	{
+	die "This category already exists!\n";
+	}
+my $rquery = $dbh->prepare("INSERT INTO review_topic(name, safename) VALUES(?, ?)");
+$rquery->execute($catname, $catsafename);
+}
+
+sub review_target_lookup
+{
+my ($dbh, $target) = @_;
+
+my $equery = $dbh->prepare("SELECT id from review_target WHERE name=?");
+$equery->execute($target);
+my $foo = $equery->fetchall_arrayref();
+return $$foo[0][0];
+}
+
+sub review_target_exists
+{
+my ($dbh, $target) = @_;
+
+my $equery = $dbh->prepare("SELECT id from review_target WHERE name=?");
+$equery->execute($target);
+my $foo = $equery->fetchall_arrayref();
+return defined($$foo[0][0]); # There is probably a better way to write this
+}
+
+sub review_category_exists
+{
+my ($dbh, $revcat) = @_;
+
+my $equery = $dbh->prepare("SELECT id from review_topic WHERE name=?");
+$equery->execute($revcat);
+my $foo = $equery->fetchall_arrayref();
+return defined($$foo[0][0]); # There is probably a better way to write this
 }
 
 sub topic_exists
@@ -291,6 +419,59 @@ foreach my $attribstr (@attribstrs)
 		print "Parsing misc attribute [$attrib] set to $value\n";
 		push(@{$attr{misc}{$attrib}}, $value);
 		}
+	}
+if(! defined($attr{title}))
+	{
+	die "Blog entries need a title\n";
+	}
+return %attr;
+}
+
+sub parse_review_attribs
+{
+my ($msg) = @_;
+
+my %attr; # Hold attributes to return
+my @attribstrs;
+while($msg =~ s/\[\!(.*?)\]//)
+	{push(@attribstrs, $1);}
+
+foreach my $attribstr (@attribstrs)
+	{
+	print "Parse [$attribstr]\n";
+	my ($attrib,$value) = split(/:/, $attribstr, 2);
+	if($attrib =~ /topic/i)
+		{
+		die "Topics are not legal in reviews\n";
+		}
+	elsif( ($attrib =~ /subject/i) || ($attrib =~ /title/i) ) # Compatibility
+		{
+		print "Note title to be $value!\n";
+		$attr{title}=$value;
+		}
+	elsif( ($attrib =~ /target/i) ) # Compatibility
+		{
+		print "Note target to be $value!\n";
+		$attr{target}=$value;
+		}
+	elsif(! defined($value))
+		{
+		print "Ignoring unknown non-valued attribute $attrib\n";
+		}
+	else
+		{
+		print "Parsing misc attribute [$attrib] set to $value\n";
+		push(@{$attr{misc}{$attrib}}, $value);
+		}
+	}
+if(! defined($attr{target}))
+	{
+	die "Reviews need a target\n";
+	}
+($attr{target}, $attr{targetsafe}) = split(':', $attr{target}, 2);
+if(! defined($attr{targetsafe}))
+	{
+	die "Review targets must have a safename\n";
 	}
 return %attr;
 }

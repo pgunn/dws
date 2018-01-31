@@ -54,7 +54,7 @@ func draw_rnode(revdata map[string]string, content string) string {
 }
 
 func display_rnode(revdata map[string]string) string {
-	// Return HTML for a single review. 
+	// Return HTML for a single review.
 	var content, _ = do_markup(revdata["body"], "reventryv1", "review")
 	var ret = draw_rnode(revdata, content)
 	// draw_rnode() consumed the output of that and actually spat out the code.
