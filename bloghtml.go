@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -107,8 +108,14 @@ func display_blogmain(dbh *sql.DB, title string, caption_extra string, blogimg s
 	if topics != nil {
 		collector = append(collector, "\t\t<div id=\"topicmenu\" class=\"gmenu\">\n")
 		collector = append(collector, "\t\t\tTopics\n")
-		for tagsafename, tagname := range topics {
-			collector = append(collector, "\t\t\t\t<div class=\"tmentry\">" + get_htlink(get_dispatch_path(dbh, "blogtag") + tagsafename, tagname, false) + "</div><!-- tmentry -->\n")
+
+		var topsafelist []string
+		for topsafename, _ := range topics {
+			topsafelist = append(topsafelist, topsafename)
+		}
+		sort.Strings(topsafelist)
+		for _, topsafename := range topsafelist {
+			collector = append(collector, "\t\t\t\t<div class=\"tmentry\">" + get_htlink(get_dispatch_path(dbh, "blogtag") + topsafename, topics[topsafename], false) + "</div><!-- tmentry -->\n")
 		}
 		collector = append(collector, "\t\t</div><!-- topicmenu -->")
 	}

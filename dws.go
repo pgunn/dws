@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -195,8 +196,15 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 		tags := get_all_tags(dbh, false)
 		collector = append(collector, "<h1>All Tags</h1><br />\n")
 		collector = append(collector, "<ul>\n")
-		for tagsafename, tagname := range tags {
-			collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "blogtag") + tagsafename, tagname, false) + "</li>\n")
+		// Go really needs a sortrange or something like that.
+		// for tagsafename, tagname := sort range tags {
+		var tagsafelist []string // more legible than performant
+		for tagsafename, _ := range tags {
+			tagsafelist = append(tagsafelist, tagsafename)
+		}
+		sort.Strings(tagsafelist)
+		for _, tagsafename := range tagsafelist {
+			collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "blogtag") + tagsafename, tags[tagsafename], false) + "</li>\n")
 		}
 		collector = append(collector, "</ul>\n")
 	} else { // TODO: This page is ugly. Fix that.
@@ -288,8 +296,15 @@ func dispatch_reviews_frontpage(w http.ResponseWriter, r *http.Request) {
 	collector = append(collector, sthtml("Reviews - Topics", true, false))
 	collector = append(collector, "<ul>Review Topics</ul>\n")
 	topics := get_all_topics(dbh)
-	for safename, name := range topics {
-		collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "reviewstopic") + safename, name, true) + "</li>\n")
+	// Go really needs a sortrange or something like that.
+	// for safename, name := sort range topics {
+	var topsafelist []string
+	for safename, _ := range topics {
+		topsafelist = append(topsafelist, safename)
+	}
+	sort.Strings(topsafelist)
+	for _, topsafename := range topsafelist {
+		collector = append(collector, "\t<li>" + get_htlink(get_dispatch_path(dbh, "reviewstopic") + topsafename, topics[topsafename], true) + "</li>\n")
 	}
 	collector = append(collector, "</ul>\n")
 	collector = append(collector, endhtml() )
