@@ -21,8 +21,12 @@ my $dbh = do_connect($config{dbase}, $config{user}, $config{pass});
 
 if($cmd =~ /^post$/i)
 	{do_post($dbh, @args)} # argument is the name of the file(s) to post
+if($cmd =~ /^rmpost$/i)
+	{do_rmpost($dbh, @args)} # argument is the zeit of the post to remove
 elsif($cmd =~ /^revpost$/i)
 	{do_revpost($dbh, @args)} # first arg is review category. second argument is the name of the file(s) to post
+elsif($cmd =~ /^rmrev$/i)
+	{do_rmrev($dbh, @args)} # argument is the zeit of the review to remove
 elsif($cmd =~ /^review_register_category$/i)
 	{do_review_register_category($dbh, @args)} # first arg is a category name, second is a category safename
 elsif($cmd =~ /^list$/i)
@@ -38,6 +42,26 @@ else
 $dbh->disconnect();
 exit;
 }
+
+sub usage
+{
+print <<EOHELP;
+DWSDC - The DWS client
+
+Commands:
+	post \$msgid - Posts or updates that entry with provided file
+	rmpost \$msgid - Remove blogpost with given msgid (zeit)
+	list - Displays list of all entries
+	topic \$topicname \$topicsafename \$description - Create or update description on a topic
+	configs - List all configs
+	configset \$key \$value - Updates an already-defined key-value in the config
+	revpost \$category \$msgid - Posts or updates review with the provided file
+	rmrev \$msgid - Remove review with given msgid (zeit)
+	review_register_category \$name \$safename - Register a new review category
+EOHELP
+exit;
+}
+
 
 sub do_connect
 {
@@ -87,22 +111,6 @@ my $cmd = shift(@my_argv);
 if($cmd =~ /^-?-?v(:?ersion)?/)
 	{do_version();}
 return ($cmd, @my_argv); # Remember, we shifted it.
-}
-
-sub usage
-{
-print <<EOHELP;
-DWSDC - The DWS client
-
-Commands:
-	post \$msgid - Posts or updates that entry with provided file
-	list - Displays list of all entries
-	topic \$topicname \$topicsafename \$description - Create or update description on a topic
-	config \$key \$value - Updates an already-defined key-value in the config
-	revpost \$category \$msgid - Posts or updates review with the provided file
-	review_register_category \$name \$safename - Register a new review category
-EOHELP
-exit;
 }
 
 sub do_version
@@ -184,6 +192,26 @@ foreach my $fn (@fns)
 	print "Posting review..\n";
 	review_post($dbh, $category, $msgid, $entfile, \%attrs);
 	}
+}
+
+sub do_rmpost
+{
+my ($dbh, $zeit) = @_;
+
+if(! msgid_exists($dbh, $zeit))
+	{
+	die "Cannot remove blogpost $zeit: It does not exist\n";
+	}
+print("Removing blogpost $zeit\n");
+erase_blogentry($dbh, $zeit);
+}
+
+sub do_rmrev
+{
+my ($dbh, $zeit) = @_;
+
+print("Removing review $zeit\n");
+erase_review($dbh, $zeit);
 }
 
 sub do_list($)
