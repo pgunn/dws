@@ -31,7 +31,7 @@ func do_markup(data string, render_target string, display_context string) (strin
 	data = linelevel_markup(data)
 	data = elevel_markup(data)
 	if display_context == "entrylist" {
-		rex_hidecuts := regexp.MustCompile(`<cut>.*?</cut>`)
+		rex_hidecuts := regexp.MustCompile(`(?s)<cut>.*?</cut>`)
 		cut_hat := func(matched string) string { return "<br /><b>(Expand post to view behind cut - " + strconv.Itoa(len(matched)) + " characters)</b><br />\n" }
 		data = rex_hidecuts.ReplaceAllStringFunc(data, cut_hat)
 	}

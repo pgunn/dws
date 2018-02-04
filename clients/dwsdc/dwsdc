@@ -21,7 +21,7 @@ my $dbh = do_connect($config{dbase}, $config{user}, $config{pass});
 
 if($cmd =~ /^post$/i)
 	{do_post($dbh, @args)} # argument is the name of the file(s) to post
-if($cmd =~ /^rmpost$/i)
+elsif($cmd =~ /^rmpost$/i)
 	{do_rmpost($dbh, @args)} # argument is the zeit of the post to remove
 elsif($cmd =~ /^revpost$/i)
 	{do_revpost($dbh, @args)} # first arg is review category. second argument is the name of the file(s) to post
