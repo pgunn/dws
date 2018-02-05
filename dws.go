@@ -258,6 +258,24 @@ func dispatch_blog_textview(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, resp)
 }
 
+func dispatch_blog_rss(w http.ResponseWriter, r *http.Request) {
+	var dbh = db_connect()
+	defer dbh.Close()
+
+	resp := do_blog_rss(dbh)
+	w.Header().Set("Content-Type", "text/xml") // Send HTTP headers as late as possible, ideally after errors might happen
+	io.WriteString(w, resp)
+}
+
+func dispatch_blog_atom(w http.ResponseWriter, r *http.Request) {
+	var dbh = db_connect()
+	defer dbh.Close()
+
+	resp := do_blog_atom(dbh)
+	w.Header().Set("Content-Type", "application/xhtml+xml") // Send HTTP headers as late as possible, ideally after errors might happen
+	io.WriteString(w, resp)
+}
+
 func dispatch_css(w http.ResponseWriter, r *http.Request) {
 	// Send the CSS needed for DWS
 	// All the CSS is in the "themedata" and "theme" tables in the database.
@@ -399,7 +417,10 @@ func main() {
 	http.HandleFunc(get_dispatch_path(dbh, "blogmain"),	dispatch_blog_htmlview)
 	http.HandleFunc(get_dispatch_path(dbh, "blogentry"),	dispatch_blog_entry)
 	http.HandleFunc(get_dispatch_path(dbh, "blogarchive"),	dispatch_blog_archive)
+	http.HandleFunc(get_dispatch_path(dbh, "blogfeedrss"),	dispatch_blog_rss)
+	http.HandleFunc(get_dispatch_path(dbh, "blogfeedatom"),	dispatch_blog_atom)
 	http.HandleFunc(get_dispatch_path(dbh, "blogtag"),	dispatch_blog_tagpage)
+
 	http.HandleFunc(get_dispatch_path(dbh, "reviewsmain"),	dispatch_reviews_frontpage)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstopic"),	dispatch_reviews_topical)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstarget"),dispatch_reviews_target)
