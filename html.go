@@ -8,7 +8,7 @@ import (
 // Generic html-related code not related to what part of dws is being run
 // Try not to do heavy database lifting in these.
 
-func sthtml(title string, public bool, do_feeds bool) string {
+func sthtml(title string, public bool, extra_headers string) string {
 	var collector []string
 
 	if !public {
@@ -22,12 +22,7 @@ func sthtml(title string, public bool, do_feeds bool) string {
 	collector = append(collector, "@import url(\"/site.css\");\n") // make this a configurable path?
 	collector = append(collector, "</style>\n")
 	collector = append(collector, "<title>" + title + "</title>\n")
-	if do_feeds {
-		var rss_url  = ""
-		var atom_url = ""
-		collector = append(collector, "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"" + rss_url +  "\" />\n")
-		collector = append(collector, "<link rel=\"alternate\" type=\"application/atom+xml\" title=\"Atom\" href=\"" + atom_url +  "\" />\n")
-	}
+	collector = append(collector, extra_headers)
 	collector = append(collector, "</head>\n")
 	collector = append(collector, "<body>\n")
 	var ret = strings.Join(collector, "")

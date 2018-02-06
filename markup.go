@@ -87,7 +87,7 @@ func linelevel_markup(input string) string {
 	// Poor man's state machine
 	parser["lastsig"] = "" // the current set of sigils
 	parser["lastblank"] = "0" // This is used to coalesce multiple blank lines into 1
-	//parser["firstline"] = "1" // A bit of extra smarts around the first line
+	parser["in_paragraph"] = "0" // A bit of extra smarts around the first line
 	// end of state machine
 
 	rex_blockstart := regexp.MustCompile(`^[*#: ]+`)
@@ -108,14 +108,21 @@ func linelevel_markup(input string) string {
 				continue
 			} else {
 				parser["lastblank"] = "0"
-				collector = append(collector, "<p>")
+				if parser["in_paragraph"] != "1" {
+					collector = append(collector, "<p>")
+					parser["in_paragraph"] = "1"
+				}
 				collector = append(collector, line)
 			}
 		} else if rex_whitespace.MatchString(line) { // Blank line that is not after another
 			parser["lastblank"] = "1"
-			collector = append(collector, "</p>") // Use this kind of thing to delimit paragraphs
+			if parser["in_paragraph"] == "1" {
+				collector = append(collector, "</p>") // Use this kind of thing to delimit paragraphs
+				parser["in_paragraph"] = "0"
+			}
 		} else { // Needs no special handling
 			collector = append(collector, line)
+			parser["firstline"] = "0"
 		}
 	}
 	// We're done with all the lines in the document at this point. 

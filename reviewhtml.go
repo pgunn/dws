@@ -42,7 +42,7 @@ func draw_rnode(revdata map[string]string, content string) string {
 	// TODO Code for jemisc, the extensible area for extra tabular data like music
 	collector = append(collector, "</div><!-- revhead -->\n")
 	collector = append(collector, "\t<div class=\"revbody\">\n")
-	collector = append(collector, "<p>" + content + "</p>\n")
+	collector = append(collector, content + "\n")
 	collector = append(collector, "\t</div><!-- revbody -->\n")
 	collector = append(collector, "\t<div class=\"revtail\">\n")
 	// TODO Tail code here

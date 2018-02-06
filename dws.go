@@ -18,7 +18,7 @@ func dispatch_root(w http.ResponseWriter, r *http.Request) {
 	defer dbh.Close()
 
 	var collector []string
-	collector = append(collector, sthtml("Main page", true, false))
+	collector = append(collector, sthtml("Main page", true, ""))
 	collector = append(collector, "<ul>\n")
 	collector = append(collector, "\t<li>" +  get_htlink(get_dispatch_path(dbh, "blogmain"),    "Blog",    true) + "</li>\n")
 	collector = append(collector, "\t<li>" +  get_htlink(get_dispatch_path(dbh, "reviewsmain"), "Reviews", true) + "</li>\n")
@@ -46,7 +46,12 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 	entries_per_archpage, _ := strconv.Atoi(get_config_value(dbh, "entries_per_archpage"))
 	num_archivepages := get_num_archivepages(dbh, entries_per_archpage)
 
-	collector = append(collector, sthtml("My blog", true, false))
+	var extra_headers []string
+	rss_url := get_config_value(dbh, "blogstatic") + get_config_value(dbh, "path_blogfeedrss")
+	extra_headers = append(extra_headers, "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"" + rss_url +  "\" />\n")
+	// extra_headers = append(extra_headers, "<link rel=\"alternate\" type=\"application/atom+xml\" title=\"Atom\" href=\"" + atom_url +  "\" />\n")
+
+	collector = append(collector, sthtml("My blog", true, strings.Join(extra_headers, "")))
 	collector = append(collector, display_blogmain(dbh,
 							get_config_value(dbh, "blogtitle"),
 							"A blog by " + get_config_value(dbh, "owner"),
@@ -102,7 +107,7 @@ func dispatch_blog_entry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	collector = append(collector, sthtml("Blog: " + blogentry["title"], true, false))
+	collector = append(collector, sthtml("Blog: " + blogentry["title"], true, ""))
 	collector = append(collector, display_blogmain(dbh,
 							"Blog: " + blogentry["title"],
 							blogentry["title"], // Title is just the entry title
@@ -152,7 +157,7 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	collector = append(collector, sthtml("Blog Archive page " + strconv.Itoa(page_requested), true, false))
+	collector = append(collector, sthtml("Blog Archive page " + strconv.Itoa(page_requested), true, ""))
 	collector = append(collector, display_blogmain(dbh,
 							"Archives, page " + strconv.Itoa(page_requested),
 							strings.Join(archive_navigator, ""),
@@ -192,7 +197,7 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 
 	tag_safename := r.URL.Path[len(get_dispatch_path(dbh, "blogtag")):] // chop off the leading path.
 	if len(tag_safename) < 1 {
-		collector = append(collector, sthtml("Blog Tags", true, false))
+		collector = append(collector, sthtml("Blog Tags", true, ""))
 		tags := get_all_tags(dbh, false)
 		collector = append(collector, "<h1>All Tags</h1><br />\n")
 		collector = append(collector, "<ul>\n")
@@ -216,7 +221,7 @@ func dispatch_blog_tagpage(w http.ResponseWriter, r *http.Request) {
 		tag_description := get_tag_description(dbh, tag_safename)
 		bentries := identify_blogentries_with_tag(dbh, tag_safename)
 
-		collector = append(collector, sthtml("Blog Tag - " + longname, true, false))
+		collector = append(collector, sthtml("Blog Tag - " + longname, true, ""))
 		collector = append(collector, "<h1>" + longname + "</h1><br />\n")
 		collector = append(collector, tag_description + "<br />\n")
 		collector = append(collector, "<ul>Entries\n")
@@ -311,7 +316,7 @@ func dispatch_reviews_frontpage(w http.ResponseWriter, r *http.Request) {
 	defer dbh.Close()
 	var collector []string
 
-	collector = append(collector, sthtml("Reviews - Topics", true, false))
+	collector = append(collector, sthtml("Reviews - Topics", true, ""))
 	collector = append(collector, "<ul>Review Topics</ul>\n")
 	topics := get_all_topics(dbh)
 	// Go really needs a sortrange or something like that.
@@ -346,7 +351,7 @@ func dispatch_reviews_topical(w http.ResponseWriter, r *http.Request) {
 	topics := get_all_topics(dbh)
 	topic := topics[topic_safename]
 
-	collector = append(collector, sthtml("Reviews - " + topic, true, false)) // todo: extend title to include topic name
+	collector = append(collector, sthtml("Reviews - " + topic, true, "")) // todo: extend title to include topic name
 	collector = append(collector, "<ul>" + topic + " Reviews:</ul>\n")
 	targets := get_all_targets_in_topic(dbh, topic_safename)
 	for safename, name := range targets {
@@ -376,7 +381,7 @@ func dispatch_reviews_target(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	collector = append(collector, sthtml("Review: " + target, true, false)) // todo: extend title to include target name
+	collector = append(collector, sthtml("Review: " + target, true, "")) // todo: extend title to include target name
 	collector = append(collector, display_reviewmain())
 	collector = append(collector, "<div id=\"reviewpart\">\n")
 

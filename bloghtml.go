@@ -50,7 +50,7 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 	// TODO Code for jemisc, the extensible area for extra tabular data like music
 	collector = append(collector, "</div><!-- jehead -->\n")
 	collector = append(collector, "\t<div class=\"jbody\">\n")
-	collector = append(collector, "<p>" + content + "</p>\n")
+	collector = append(collector, content + "\n")
 	collector = append(collector, "\t</div><!-- jbody -->\n")
 	collector = append(collector, "\t<div class=\"jetail\">\n")
 	collector = append(collector, get_htlink(get_dispatch_path(dbh, "blogentry") + "entry" + bentrydata["zeit"] + ".html", "LINK", true) ) // Let people see just this entry

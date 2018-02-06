@@ -80,11 +80,11 @@ func do_rss_sequence(dbh *sql.DB, entrylist []string) string {
 		collector = append(collector, "<dc:creator>" + get_config_value(dbh, "owner") + "</dc:creator>\n")
 		// The designers of RSS had unfortunate taste in date strings
 		zeit_int, _ := strconv.ParseInt(blogentry["zeit"], 10, 64)
-		timestring := time.Unix(zeit_int, 0).Format(time.RFC1123Z)
+		timestring := time.Unix(zeit_int, 0).Format("2006-01-02T15:04:05Z07:00") // RSS1 uses ISO8601 strings for time
 
 		collector = append(collector, "<dc:date>" + timestring + "</dc:date>\n")
-		collector = append(collector, "<content:encoded>" + rendered + "</content:encoded>\n")
-		collector = append(collector, "</item>\n")
+		collector = append(collector, "<content:encoded><![CDATA[" + rendered + "]]></content:encoded>\n")
+		collector = append(collector, "</item>")
 	}
 
 	return strings.Join(collector, "")
