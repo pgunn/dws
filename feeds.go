@@ -5,6 +5,7 @@ import (
 	"strings"
 	"strconv"
 	"time"
+	"github.com/gorilla/feeds"
 )
 
 // feeds.go
@@ -12,11 +13,36 @@ import (
 // This does everything relating to the RSS/Atom feeds for the blog, from database calls to formatting.
 
 func do_blog_atom(dbh *sql.DB) string {
-	var collector []string
+	last_ten_entries := identify_last_n_blogentries(dbh, 10, false) // Consider making the number configurable
+	now := time.Now()
 
-	// last_ten_entries := identify_last_n_blogentries(dbh, 10, false) // Consider making the number configurable
+	feed := &feeds.Feed{
+		Title:		get_config_value(dbh, "blogtitle"),
+		Link:		&feeds.Link{Href: get_config_value(dbh, "blogstatic")},
+		Description:	"Blog of " + get_config_value(dbh, "owner"),
+		Author:		&feeds.Author{Name: get_config_value(dbh, "owner")},
+		Created:	now,
+		Items:		make([]*feeds.Item, 0),
+	}
 
-	return strings.Join(collector, "")
+	for _, entryid := range last_ten_entries {
+
+		var blogentry, _, _ = get_blogentry(dbh, entryid)
+		blogentry_link := get_config_value(dbh, "blogstatic") + get_dispatch_path(dbh, "blogentry") + "entry" + blogentry["zeit"] + ".html" // TODO Utility fn
+		zeit_int, _ := strconv.ParseInt(blogentry["zeit"], 10, 64)
+		timeobj := time.Unix(zeit_int, 0)
+		rendered, _ := do_markup(blogentry["body"], "rss", "entrylist")
+		feedEntry := &feeds.Item{
+			Title:		blogentry["title"],
+			Link:		&feeds.Link{Href: blogentry_link},
+			Description:	rendered,
+			Author:		&feeds.Author{Name: get_config_value(dbh, "owner")},
+			Created:	timeobj,
+		}
+		feed.Items = append(feed.Items, feedEntry)
+	}
+	ret, _ := feed.ToAtom()
+	return ret
 }
 
 func do_blog_rss(dbh *sql.DB) string {

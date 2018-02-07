@@ -48,8 +48,9 @@ func dispatch_blog_htmlview(w http.ResponseWriter, r *http.Request) {
 
 	var extra_headers []string
 	rss_url := get_config_value(dbh, "blogstatic") + get_config_value(dbh, "path_blogfeedrss")
+	atom_url := get_config_value(dbh, "blogstatic") + get_config_value(dbh, "path_blogfeedatom")
 	extra_headers = append(extra_headers, "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS\" href=\"" + rss_url +  "\" />\n")
-	// extra_headers = append(extra_headers, "<link rel=\"alternate\" type=\"application/atom+xml\" title=\"Atom\" href=\"" + atom_url +  "\" />\n")
+	extra_headers = append(extra_headers, "<link rel=\"alternate\" type=\"application/atom+xml\" title=\"Atom\" href=\"" + atom_url +  "\" />\n")
 
 	collector = append(collector, sthtml("My blog", true, strings.Join(extra_headers, "")))
 	collector = append(collector, display_blogmain(dbh,
