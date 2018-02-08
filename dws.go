@@ -412,14 +412,18 @@ func getenv_with_default(key, fallback string) string {
 	return env_val
 }
 
+func dispatch_redirect_home(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+}
+
 // Finally our main function
 func main() {
 	var dbh = db_connect()
-	defer dbh.Close()
 
 	print("Starting DWS\n")
 	port := getenv_with_default("DWS_PORT", "8000")
-	http.HandleFunc("/",			dispatch_root)
+	http.HandleFunc("/",					dispatch_root)
+	http.HandleFunc("/pound",				dispatch_redirect_home)
 	http.HandleFunc(get_dispatch_path(dbh, "blogmain"),	dispatch_blog_htmlview)
 	http.HandleFunc(get_dispatch_path(dbh, "blogentry"),	dispatch_blog_entry)
 	http.HandleFunc(get_dispatch_path(dbh, "blogarchive"),	dispatch_blog_archive)
@@ -431,5 +435,6 @@ func main() {
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstopic"),	dispatch_reviews_topical)
 	http.HandleFunc(get_dispatch_path(dbh, "reviewstarget"),dispatch_reviews_target)
 	http.HandleFunc(get_dispatch_path(dbh, "cssmain"),	dispatch_css)
+	dbh.Close()
 	http.ListenAndServe("localhost:" + port, nil)
 }
