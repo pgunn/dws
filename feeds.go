@@ -28,7 +28,7 @@ func do_blog_atom(dbh *sql.DB) string {
 	for _, entryid := range last_ten_entries {
 
 		var blogentry, _, _ = get_blogentry(dbh, entryid)
-		blogentry_link := get_config_value(dbh, "blogstatic") + get_dispatch_path(dbh, "blogentry") + "entry" + blogentry["zeit"] + ".html" // TODO Utility fn
+		blogentry_link := path_to_blogentry(dbh, blogentry["zeit"])
 		zeit_int, _ := strconv.ParseInt(blogentry["zeit"], 10, 64)
 		timeobj := time.Unix(zeit_int, 0)
 		rendered, _ := do_markup(blogentry["body"], "rss", "entrylist")
@@ -85,7 +85,7 @@ func do_rss_sequence(dbh *sql.DB, entrylist []string) string {
 
 	for _, entryid := range entrylist {
 		var blogentry, _, _ = get_blogentry(dbh, entryid)
-		blogentry_link := get_config_value(dbh, "blogstatic") + get_dispatch_path(dbh, "blogentry") + "entry" + blogentry["zeit"] + ".html" // TODO Utility fn
+		blogentry_link := path_to_blogentry(dbh, blogentry["zeit"])
 		collector = append(collector, "<rdf:li rdf:resource=\"" + blogentry_link + "\" />\n")
 	}
 	collector = append(collector, "</rdf:Seq>\n")
@@ -94,7 +94,7 @@ func do_rss_sequence(dbh *sql.DB, entrylist []string) string {
 	// Now for the second part, where we deliver payloads for preview.
 	for _, entryid := range entrylist { // If we were doing a bigger list, caching would make sense. Or writing both string-sets in one iteration.
 		var blogentry, _, _ = get_blogentry(dbh, entryid)
-		blogentry_link := get_config_value(dbh, "blogstatic") + get_dispatch_path(dbh, "blogentry") + "entry" + blogentry["zeit"] + ".html" // TODO Utility fn
+		blogentry_link := path_to_blogentry(dbh, blogentry["zeit"])
 
 		rendered, _ := do_markup(blogentry["body"], "rss", "entrylist")
 		brace_extractor := strings.NewReplacer("[", "_", "]", "_")

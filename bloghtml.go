@@ -53,7 +53,7 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 	collector = append(collector, content + "\n")
 	collector = append(collector, "\t</div><!-- jbody -->\n")
 	collector = append(collector, "\t<div class=\"jetail\">\n")
-	collector = append(collector, get_htlink(get_dispatch_path(dbh, "blogentry") + "entry" + bentrydata["zeit"] + ".html", "LINK", true) ) // Let people see just this entry
+	collector = append(collector, get_htlink(path_to_blogentry(dbh, bentrydata["zeit"]), "LINK", true) ) // Let people see just this entry
 	// TODO Tail code here
 	collector = append(collector, "\t</div><!-- jetail -->\n")
 	collector = append(collector, "</div><!-- jentry -->")
@@ -101,8 +101,8 @@ func display_blogmain(dbh *sql.DB, title string, caption_extra string, blogimg s
 	if num_archives > 0 {
 		collector = append(collector, "\t\t<div id=\"archmenu\" class=\"gmenu\">\n")
 		collector = append(collector, "\t\t\tArchives\n")
-		collector = append(collector, "\t\t\t<div class=\"arentry\">" + get_htlink(get_dispatch_path(dbh, "blogarchive") + "page1.html", "First Page", true) + "</div><!-- arentry -->\n")
-		collector = append(collector, "\t\t\t<div class=\"arentry\">" + get_htlink(get_dispatch_path(dbh, "blogarchive") + "page" + strconv.Itoa(num_archives) + ".html", "Last Page", true) + "</div><!-- arentry -->\n")
+		collector = append(collector, "\t\t\t<div class=\"arentry\">" + get_htlink(path_to_archive_page(dbh, 1), "First Page", true) + "</div><!-- arentry -->\n")
+		collector = append(collector, "\t\t\t<div class=\"arentry\">" + get_htlink(path_to_archive_page(dbh, num_archives), "Last Page", true) + "</div><!-- arentry -->\n")
 		collector = append(collector, "\t\t</div><!-- archmenu -->\n")
 	}
 	if topics != nil {

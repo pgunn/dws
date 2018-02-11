@@ -150,11 +150,11 @@ func dispatch_blog_archive(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if page_requested > 1 { // Title area should have a link to the prior archive page
-		archive_navigator = append(archive_navigator, get_htlink(get_dispatch_path(dbh, "blogarchive") + "page" + strconv.Itoa(page_requested - 1) + ".html", "[Past]", true))
+		archive_navigator = append(archive_navigator, get_htlink(path_to_archive_page(dbh, page_requested - 1), "[Past]", true))
 	}
 
 	if page_requested < num_archivepages { // Title area should have a link to the next archive page
-		archive_navigator = append(archive_navigator, get_htlink(get_dispatch_path(dbh, "blogarchive") + "page" + strconv.Itoa(page_requested + 1) + ".html", "[Future]", true))
+		archive_navigator = append(archive_navigator, get_htlink(path_to_archive_page(dbh, page_requested + 1), "[Future]", true))
 
 	}
 
