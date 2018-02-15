@@ -17,6 +17,10 @@ func dispatch_root(w http.ResponseWriter, r *http.Request) {
 	var dbh = db_connect()
 	defer dbh.Close()
 
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
 	var collector []string
 	collector = append(collector, sthtml("Main page", true, ""))
 	collector = append(collector, "<ul>\n")
