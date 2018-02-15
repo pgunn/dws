@@ -16,6 +16,7 @@ func get_blogentry(dbh *sql.DB, id string) (map[string]string, map[string]string
 	ok = false // Need to find one before we decide we're happy
 
 	dbq, _ := dbh.Query("SELECT title, zeit, body, music FROM blogentry WHERE id=$1", id)
+	defer dbq.Close()
 	for dbq.Next() {
 		var title, zeit, body, music sql.NullString
 		dbq.Scan(&title, &zeit, &body, &music)
@@ -37,6 +38,7 @@ func get_blogentry(dbh *sql.DB, id string) (map[string]string, map[string]string
 func get_beid_by_zeit(dbh *sql.DB, zeit string) (string, bool) {
 	// Try to get the internal id of a blogentry with the named zeit
 	dbq, _ := dbh.Query("SELECT id FROM blogentry where zeit=$1", zeit)
+	defer dbq.Close()
 	var beid = ""
 	for dbq.Next() {
 		dbq.Scan(&beid)
@@ -57,6 +59,7 @@ func identify_last_n_blogentries(dbh *sql.DB, count int, include_private bool) [
 	} else {
 		dbq, _ = dbh.Query("SELECT id FROM blogentry WHERE private=false ORDER BY zeit DESC LIMIT $1", count)
 	}
+	defer dbq.Close()
 	for dbq.Next() {
 		var retval string
 		dbq.Scan(&retval)
@@ -74,6 +77,7 @@ func get_all_tags(dbh *sql.DB, include_empty bool) map[string]string {
 	} else {
 		dbq, _ = dbh.Query("SELECT name, safename FROM tag WHERE id IN (SELECT tagid FROM blogentry_tags)")
 	}
+	defer dbq.Close()
 	for dbq.Next() {
 		var name, safename string
 		dbq.Scan(&name, &safename)
@@ -87,6 +91,7 @@ func get_longname_for_safe_tag(dbh *sql.DB, safename string) (string, bool) {
 	// SELECT id FROM tag WHERE tagname=$tag
 
 	dbq, _ := dbh.Query("SELECT name FROM tag WHERE safename=$1", safename)
+	defer dbq.Close()
 	for dbq.Next() {
 		var name string
 		dbq.Scan(&name)
@@ -99,6 +104,7 @@ func get_tag_description(dbh *sql.DB, safename string) string {
 	var descrip = "No description yet"
 
 	dbq, _ := dbh.Query("SELECT descrip FROM tag WHERE safename=$1", safename)
+	defer dbq.Close()
 	for dbq.Next() {
 		dbq.Scan(&descrip)
 	}
@@ -111,6 +117,7 @@ func identify_blogentries_with_tag(dbh *sql.DB, safename string) []string {
 	var ret []string
 
 	dbq, _ := dbh.Query("SELECT id FROM blogentry WHERE id IN (SELECT beid FROM blogentry_tags WHERE tagid=(SELECT id FROM tag WHERE safename=$1))", safename)
+	defer dbq.Close()
 	for dbq.Next() {
 		var beid string
 		dbq.Scan(&beid)
@@ -125,6 +132,7 @@ func identify_blogentries_for_archive_page(dbh *sql.DB, archpage int, archsize i
 	var ret []string
 
 	dbq, _ := dbh.Query("SELECT id FROM blogentry ORDER BY zeit LIMIT $1 OFFSET $2", archsize, archsize * (archpage - 1))
+	defer dbq.Close()
 	for dbq.Next() {
 		var beid string
 		dbq.Scan(&beid)
@@ -141,6 +149,7 @@ func get_num_archivepages(dbh *sql.DB, archsize int) int {
 
 func get_blog_numentries(dbh *sql.DB) int {
 	dbq, _ := dbh.Query("SELECT COUNT(id) FROM blogentry")
+	defer dbq.Close()
 	var ret int
 	for dbq.Next() {
 		dbq.Scan(&ret)

@@ -28,6 +28,7 @@ func get_config_value(dbh *sql.DB, key string) string {
 	// Given a key, return its value in the config table
 	ret := ""
 	dbq, err := dbh.Query("SELECT value FROM config WHERE name=$1", key)
+	defer dbq.Close()
 	if err != nil {
 		return ""
 	}

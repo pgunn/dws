@@ -17,6 +17,7 @@ func get_css(dbh *sql.DB, extra string) string {
 	var all_css = make(map[string]map[string]map[string]string)
 
 	dbq, err := dbh.Query("SELECT csstype, csselem, cssprop, cssval FROM themedata WHERE themeid=(SELECT id FROM theme WHERE name='BaseTheme')")
+	defer dbq.Close()
 	if err != nil {
 		log.Print(err)
 		return ret

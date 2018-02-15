@@ -14,6 +14,7 @@ func get_all_topics(dbh *sql.DB) map[string]string {
 	var ret = make(map[string]string)
 
 	dbq, err := dbh.Query("SELECT safename, name FROM review_topic ORDER BY name")
+	defer dbq.Close()
 	if err != nil {
 		return ret
 	}
@@ -33,6 +34,7 @@ func get_all_targets_in_topic(dbh *sql.DB, topicsafename string) map [string]str
 	var ret = make(map[string]string)
 
 	dbq, err := dbh.Query("SELECT name, safename FROM review_target WHERE topic IN (SELECT id FROM review_topic WHERE safename=$1)", topicsafename)
+	defer dbq.Close()
 	if err != nil {
 		return ret
 	}
@@ -49,6 +51,7 @@ func get_longname_for_target(dbh *sql.DB, targetsafename string) (string, bool) 
 	// For reviews, translate a safename into a long "display" name. Returns false
 	// if it can't find the safename.
 	dbq, err := dbh.Query("SELECT name FROM review_target WHERE safename=$1", targetsafename)
+	defer dbq.Close()
 	if err != nil {
 		return "", false
 	}
@@ -66,6 +69,7 @@ func identify_all_reviews_for_target(dbh *sql.DB, targetsafename string) []strin
 	var ret []string
 
 	dbq, err := dbh.Query("SELECT id FROM review WHERE target IN (SELECT id FROM review_target WHERE review_target.safename=$1) ORDER BY zeit", targetsafename)
+	defer dbq.Close()
 	if err != nil {
 		return ret
 	}
@@ -84,6 +88,7 @@ func get_review(dbh *sql.DB, id string) map[string]string {
 	var ret = make(map[string]string)
 
 	dbq, err := dbh.Query("SELECT title, zeit, body, rating FROM review WHERE id=$1", id)
+	defer dbq.Close()
 	if err != nil {
 		print("Internal error in get_review!\n")
 		return ret
