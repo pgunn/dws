@@ -425,6 +425,7 @@ foreach my $attribstr (@attribstrs)
 	{
 	print "Parse [$attribstr]\n";
 	my ($attrib,$value) = split(/:/, $attribstr, 2);
+	$attrib = lc($attrib);
 	if($attrib =~ /topic/i)
 		{
 		$attr{topic}{$value}=1;
