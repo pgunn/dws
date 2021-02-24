@@ -53,7 +53,7 @@ func draw_bnode(dbh *sql.DB, bentrydata map[string]string, content string, tags 
 	collector = append(collector, content + "\n")
 	collector = append(collector, "\t</div><!-- jbody -->\n")
 	collector = append(collector, "\t<div class=\"jetail\">\n")
-	collector = append(collector, get_htlink(path_to_blogentry(dbh, bentrydata["zeit"]), "LINK", true) ) // Let people see just this entry
+	collector = append(collector, get_htlink(path_to_blogentry(dbh, bentrydata["zeit"]), "LINK/Expand", true) ) // Let people see just this entry
 	// TODO Tail code here
 	collector = append(collector, "\t</div><!-- jetail -->\n")
 	collector = append(collector, "</div><!-- jentry -->")

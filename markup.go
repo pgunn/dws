@@ -350,7 +350,7 @@ func markup_ext_link(input string) string {
 	parts := strings.Split(input, "|")
 	var linktext string
 	if len(parts) == 1 {
-		linktext = "LINK/Expand"
+		linktext = "LINK"
 	} else {
 		linktext = parts[1]
 	}
